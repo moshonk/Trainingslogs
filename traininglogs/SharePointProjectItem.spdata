@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectItem Type="Microsoft.VisualStudio.SharePoint.Module" DefaultFile="Elements.xml" SupportedTrustLevels="All" SupportedDeploymentScopes="Web, Site" xmlns="http://schemas.microsoft.com/VisualStudio/2010/SharePointTools/SharePointProjectItemModel">
+  <Files>
+    <ProjectItemFile Source="Elements.xml" Type="ElementManifest" />
+    <ProjectItemFile Source="src\app\app.js" Target="src\app\" Type="ElementFile" />
+    <ProjectItemFile Source="src\css\angucomplete-alt.css" Target="src\css\" Type="ElementFile" />
+    <ProjectItemFile Source="src\css\style.css" Target="src\css\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\directives\mfb\mfb.min.css" Target="src\common\directives\mfb\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\directives\mfb\mfb-directive.js" Target="src\common\directives\mfb\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\directives\modal.js" Target="src\common\directives\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\resources\people.js" Target="src\common\resources\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\resources\trainings.js" Target="src\common\resources\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\resources\trainingattendances.js" Target="src\common\resources\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\resources\traininglogs.js" Target="src\common\resources\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\resources\trainingreports.js" Target="src\common\resources\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\resources\departments.js" Target="src\common\resources\" Type="ElementFile" />
+    <ProjectItemFile Source="vendor\angular-ui\bootstrap\ui-bootstrap-dialogs.js" Target="vendor\angular-ui\bootstrap\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\mfb-buttons.tpl.html" Target="src\app\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\trainings\trainings.js" Target="src\app\traininglogs\trainings\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\reports\reports.js" Target="src\app\traininglogs\reports\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\traininglogs.js" Target="src\app\traininglogs\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\traininglog-list.tpl.html" Target="src\app\traininglogs\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\traininglog-edit.tpl.html" Target="src\app\traininglogs\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\traininglog-add.tpl.html" Target="src\app\traininglogs\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\trainings\training-list.tpl.html" Target="src\app\traininglogs\trainings\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\trainings\training-add.tpl.html" Target="src\app\traininglogs\trainings\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\reports\trainingattendance-matrix.tpl.html" Target="src\app\traininglogs\reports\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\reports\trainingattendance-report.tpl.html" Target="src\app\traininglogs\reports\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\services\utililities.js" Target="src\common\services\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\trainingattendee.tpl.html" Target="src\app\traininglogs\" Type="ElementFile" />
+    <ProjectItemFile Source="src\Default.aspx" Target="src\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\resources\positions.js" Target="src\common\resources\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\resources\locations.js" Target="src\common\resources\" Type="ElementFile" />
+  </Files>
+</ProjectItem>

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "traininglogs", "traininglogs\traininglogs.csproj", "{AA1BBFCE-4697-4349-A688-ABF440A1FCA2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trainingslogs", "traininglogs\Trainingslogs.csproj", "{AA1BBFCE-4697-4349-A688-ABF440A1FCA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

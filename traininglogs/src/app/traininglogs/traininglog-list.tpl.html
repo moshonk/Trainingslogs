@@ -1,0 +1,49 @@
+<div class="row">
+    <div class="col-md-12">
+        <h2>Training Logs</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <span class="pull-right">
+            <a href="#" ng-click="addTraininglog()" class="btn btn-sm btn-success">
+                <i class="fa fa-plus-circle"></i>
+                Add
+            </a>
+        </span>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-bordered table-condensed table-striped table-hover">
+            <tbody>
+                <tr>
+                    <th>Training Date</th>
+                    <th>Title</th>
+                    <th>Facilitator(s)</th>
+                    <th>Target</th>
+                    <th></th>
+                </tr>
+                <tr ng-repeat="traininglog in traininglogs">
+                    <td>{{traininglog.startDate | date: 'dd/MM/yyyy' : 'africa/nairobi'}}</td>
+                    <td>{{traininglog.training.title}}</td>
+                    <td><span data-ng-repeat="facilitator in traininglog.facilitator">{{facilitator.title}},</span></td>
+                    <td>{{traininglog.target}}</td>
+                    <td>
+                        <div class="btn-group" uib-dropdown>
+                            <button id="split-button" type="button" class="btn btn-sm btn-info"><i class="fa fa-gear"> </i> Action</button>
+                            <button type="button" class="btn btn-sm btn-info" uib-dropdown-toggle>
+                                <span class="caret"></span>
+                                <span class="sr-only">Split button!</span>
+                            </button>
+                            <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
+                                <li role="menuitem"><a href="#editTraininglog/{{traininglog.id}}" ng-click="showTraininglog(traininglog.id)"><i class="fa fa-search"> </i> View</a></li>
+                                <li role="menuitem"><a href="#" ng-click="deleteTraininglog(traininglog)"><i class="fa fa-trash"> </i> Delete</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

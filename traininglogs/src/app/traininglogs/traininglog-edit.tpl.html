@@ -1,0 +1,48 @@
+    <div class="container-fluid">
+      <div>
+        <h2>Training Log</h2>
+        <div class="row">
+          <div class="col-md-12">
+            <h3>Title:  {{traininglog.training.title}}</h3>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <h4>Training Date: {{traininglog.startDate}}</h4>
+          </div>
+          <div class="col-md-4">
+            <h4>Facilitator: <span data-ng-repeat="facilitator in traininglog.facilitator">{{facilitator.title}}</span></h4>
+          </div>
+          <div class="col-md-4">
+            <span class="pull-right">
+              <a href="#editTraininglog/{{traininglog.id}}" ng-click="addTrainingattendee(traininglog)" class="btn btn-sm btn-success">
+                <i class="fa fa-plus-circle"></i>
+                Add Attendee                
+              </a> 
+            </span>
+          </div>
+        </div>
+      </div>
+    <table class="table table-bordered table-condensed table-striped table-hover">
+        <tbody>
+          <tr>
+            <th>Payroll</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Position</th>
+            <th>Department</th>
+            <th>Location</th>
+            <th>Action</th>
+          </tr>
+          <tr ng-repeat="attendance in traininglog.attendances">
+            <td>{{attendance.attendee.payrollNo}}</td>
+            <td>{{attendance.attendee.name}}</td>
+            <td>{{attendance.attendee.gender}}</td>
+            <td>{{attendance.attendee.position.title}}</td>
+            <td>{{attendance.attendee.department.title}}</td>
+            <td>{{attendance.attendee.location.title}}</td>
+            <td><a href="#editTraininglog/{{traininglog.id}}" class="btn btn-sm btn-warning" ng-click="removeAttendee(traininglog, attendance.attendee)"><i class="fa fa-trash"> </i> Delete</a> </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>

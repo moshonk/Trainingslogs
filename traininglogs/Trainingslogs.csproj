@@ -7,8 +7,8 @@
     <ProjectGuid>{AA1BBFCE-4697-4349-A688-ABF440A1FCA2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>traininglogs</RootNamespace>
-    <AssemblyName>traininglogs</AssemblyName>
+    <RootNamespace>trainingslogs</RootNamespace>
+    <AssemblyName>Trainings Logs App</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetOfficeVersion>15.0</TargetOfficeVersion>
     <FileAlignment>512</FileAlignment>
@@ -43,12 +43,44 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="src\app\app.js" />
+    <Content Include="src\app\mfb-buttons.tpl.html" />
+    <Content Include="src\app\traininglogs\reports\reports.js" />
+    <Content Include="src\app\traininglogs\reports\trainingattendance-matrix.tpl.html" />
+    <Content Include="src\app\traininglogs\reports\trainingattendance-report.tpl.html" />
+    <Content Include="src\app\traininglogs\trainingattendee.tpl.html" />
+    <Content Include="src\app\traininglogs\traininglog-add.tpl.html" />
+    <Content Include="src\app\traininglogs\traininglog-edit.tpl.html" />
+    <Content Include="src\app\traininglogs\traininglog-list.tpl.html" />
+    <Content Include="src\app\traininglogs\traininglogs.js" />
+    <Content Include="src\app\traininglogs\trainings\training-add.tpl.html" />
+    <Content Include="src\app\traininglogs\trainings\training-list.tpl.html" />
+    <Content Include="src\app\traininglogs\trainings\trainings.js" />
+    <Content Include="src\common\directives\mfb\mfb-directive.js" />
+    <Content Include="src\common\directives\mfb\mfb.min.css" />
+    <Content Include="src\common\directives\modal.js" />
+    <Content Include="src\common\resources\departments.js" />
+    <Content Include="src\common\resources\locations.js" />
+    <Content Include="src\common\resources\people.js" />
+    <Content Include="src\common\resources\positions.js" />
+    <Content Include="src\common\resources\trainings.js" />
+    <Content Include="src\common\resources\trainingattendances.js" />
+    <Content Include="src\common\resources\traininglogs.js" />
+    <Content Include="src\common\resources\trainingreports.js" />
+    <Content Include="src\common\services\utililities.js" />
+    <Content Include="src\css\angucomplete-alt.css" />
+    <Content Include="src\css\style.css" />
+    <Content Include="vendor\angular-ui\bootstrap\ui-bootstrap-dialogs.js" />
     <None Include="packages.config" />
     <None Include="Pages\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{798462f8-e3b8-42dc-b6a2-344921d34e9e}</SharePointProjectItemId>
     </None>
+    <Content Include="Elements.xml" />
     <Content Include="Pages\Elements.xml" />
-    <Content Include="Pages\Default.aspx" />
+    <Content Include="src\Default.aspx" />
+    <None Include="SharePointProjectItem.spdata">
+      <SharePointProjectItemId>{3887a258-147e-4c77-a681-19c65e70c58a}</SharePointProjectItemId>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\jquery-1.9.1.min.map" />
@@ -96,6 +128,9 @@
     <AppManifestFile Include="AppManifest.xml">
       <SubType>Designer</SubType>
     </AppManifestFile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\assets\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
