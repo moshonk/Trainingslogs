@@ -1,6 +1,6 @@
 angular.module('resources.attendances', ['resources.people', 'services.utilities'])
 
-.factory('Attendances', ['$filter', '$q', 'ArrayUtils', 'People', function ($filter, $q, ArrayUtils, People) {
+.factory('Attendances', ['$filter', '$q', 'ArrayUtils', 'ShptRestService', 'People', function ($filter, $q, ArrayUtils, ShptRestService, People) {
 
     var Attendances = {};
 
@@ -11,23 +11,48 @@ angular.module('resources.attendances', ['resources.people', 'services.utilities
     *@returns {array} person - Array of training attendances
     */
     Attendances.fetchAll = function () {
-        
+
         var deferred = $q.defer();
-        
+
         if (AttendanceList === null) {
 
             AttendanceList = [];
-            
-            People.fetchAll().then(function (people) {
-                
-                AttendanceList.push(
-                    { id: 1, attendee: _.find(people, { id: 1 }), remarks: 'Excellent', traininglogId: 1, trainingId: 1 },
-                    { id: 2, attendee: _.find(people, { id: 2 }), remarks: 'Excellent', traininglogId: 2, trainingId: 2 }
-                );
-                
+
+            var queryParams = '$select=ID,TraininglogId,AttendeeId';
+
+            var promises = [];
+
+            promises.push(ShptRestService.getListItems('Trainingattendances', queryParams));
+
+            promises.push(People.fetchAll());
+
+            $q.all(promises).then(function (promiseResults) {
+
+                var trainingAttendances, people;
+
+                trainingAttendances = promiseResults[0].results;
+
+                people = promiseResults[1];
+
+                angular.forEach(trainingAttendances, function (v, k) {
+
+                    var attendance = {};
+
+                    attendance.id = v.ID;
+                    attendance.remarks = angular.isUndefined(v.Remarks) ? '' : v.Remarks;
+                    attendance.traininglogId = v.TraininglogId
+                    attendance.attendee = _.find(people, { id: v.AttendeeId });
+                    AttendanceList.push(attendance);
+
+                });
+
                 deferred.resolve(AttendanceList);
+
             });
 
+        } else {
+
+            deferred.resolve(AttendanceList);
         }
 
         return deferred.promise;
@@ -41,11 +66,17 @@ angular.module('resources.attendances', ['resources.people', 'services.utilities
     */
     Attendances.fetchById = function (id) {
 
-        Attendances.fetchAll();
+        var deferred = $q.defer();
 
-        var returnedAttendances = $filter('filter')(AttendanceList, { id: id });
+        Attendances.fetchAll().then(function () {
 
-        return returnedAttendance[0];
+            var returnedAttendances = _.find(AttendanceList, { id: id });
+
+            deferred.resolve(returnedAttendance);
+
+        });
+
+        return deferred.promise;
 
     };
 
@@ -100,13 +131,32 @@ angular.module('resources.attendances', ['resources.people', 'services.utilities
 
     Attendances.addAttendee = function (traininglog) {
 
-        traininglog.attendance.id = 1;
+        var defer, data;
 
-        traininglog.attendance.traininglogId = traininglog.id;
+        defer = $q.defer();
 
-        AttendanceList.push(traininglog.attendance);
+        data = {
+            Title: traininglog.training.title + '(' + traininglog.startDate + ') - ' + traininglog.attendance.attendee.name,
+            TraininglogId: traininglog.id,
+            AttendeeId: traininglog.attendance.attendee.id
+        }
 
-        //TODO Persist to DB
+        ShptRestService.createNewListItem('Trainingattendances', data).then(function (response) {
+
+            traininglog.attendance.id = response.Id;
+
+            AttendanceList.push(traininglog.attendance);
+
+            defer.resolve(traininglog.attendance)
+
+        }).catch(function (error) {
+
+            defer.reject(error);
+
+        });
+
+        return defer.promise;
+
     };
 
     Attendances.updateAttendee = function (traininglog) {
@@ -117,17 +167,35 @@ angular.module('resources.attendances', ['resources.people', 'services.utilities
 
     };
 
-    Attendances.removeAttendee = function (traininglog, attendee) {
+    /*
+    * Remove an attendee from a training session
+    * @param {object} traininglog instance
+    * @param {object} person to be removed from the training log instance
+    * @returns {object} traininglog instance
+    */
+    Attendances.removeAttendee = function (traininglog, attendance) {
 
-        var matchingPerson = _.find(traininglog.attendances, function (thatAttendee) {
+        var deferred = $q.defer();
 
-            return thatAttendee.id == attendee.id;
+        ShptRestService.deleteListItem('Trainingattendances', attendance.id).then(function (response) {
+
+            var matchingAttendance = _.find(traininglog.attendances, function (thatAttendance) {
+
+                return thatAttendance.id == attendance.id;
+
+            });
+
+            traininglog.attendances = _.without(traininglog.attendances, matchingAttendance);
+
+            deferred.resolve(traininglog);
+
+        }).catch(function (error) {
+
+            deferred.reject(error)
 
         });
 
-        traininglog.attendances = _.without(traininglog.attendances, matchingPerson);
-
-        //TODO Persist removal to database
+        return deferred.promise;
 
     };
 

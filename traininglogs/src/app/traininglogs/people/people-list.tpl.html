@@ -1,0 +1,58 @@
+<div ng-controller="peopleCtrl" class="bootstrap-iso">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="formden_header">
+                <h2><i class="fa fa-users"></i> Staff Members</h2>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <span class="pull-right">
+                <a href="#addPerson" ng-click="addPerson()" class="btn btn-sm btn-success">
+                    <i class="fa fa-plus-circle"></i>
+                    Add
+                </a>
+            </span>
+            <span class="btn-group pull-left">
+                <a href="{{link.url}}" class="btn btn-sm btn-info" ng-repeat="link in links">
+                    <i class="fa {{link.icon}}"></i>
+                    {{link.title}}
+                </a>
+            </span>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-bordered table-condensed table-striped table-hover">
+                <tbody>
+                    <tr>
+                        <th>Payroll</th>
+                        <th>Name</th>
+                        <th>Gender</th>
+                        <th>Position</th>
+                        <th>Department</th>
+                        <th>Location</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr dir-paginate="person in people | itemsPerPage: 10">
+                        <td>{{person.payrollNo}}</td>
+                        <td>{{person.name}}</td>
+                        <td>{{person.gender}}</td>
+                        <td>{{person.position.title}}</td>
+                        <td>{{person.department.title}}</td>
+                        <td>{{person.location.title}}</td>
+                        <td>
+                            <a href="#listPeople" class="btn btn-sm btn-info" ng-click="editPerson(person)"><i class="fa fa-pencil"> </i> Edit</a>
+                            <a href="#listPeople" class="btn btn-sm btn-warning" ng-click="deletePerson(person)"><i class="fa fa-trash"> </i> Delete</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-sm-12">
+            <dir-pagination-controls boundary-links="true" template-url="common/directives/pagination/dirPagination.tpl.html"></dir-pagination-controls>
+        </div>
+    </div>
+</div>

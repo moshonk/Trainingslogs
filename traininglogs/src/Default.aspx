@@ -8,19 +8,31 @@
 
 <%-- The markup and script in the following Content element will be placed in the <head> of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderAdditionalPageHead" runat="server">
+    <!--    SharePoint page developers can opt-out of clickjacking protection by adding the AllowFraming control to their .aspx pages:
+    <WebPartPages:AllowFraming runat="server" />
+    https://blogs.msdn.microsoft.com/officeapps/2012/12/12/iframing-sharepoint-hosted-pages-in-apps/
+    -->
+    <WebPartPages:AllowFraming runat="server" />
+
     <SharePoint:ScriptLink Name="sp.runtime.js" runat="server" OnDemand="true" LoadAfterUI="true" Localizable="false" />
     <SharePoint:ScriptLink Name="sp.js" runat="server" OnDemand="true" LoadAfterUI="true" Localizable="false" />
-    <SharePoint:ScriptLink Name="sp.taxonomy.js" runat="server" OnDemand="true" LoadAfterUI="true" Localizable="false" />
+    <script type="text/javascript" src="/_layouts/15/SP.RequestExecutor.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/sp.taxonomy.js"></script>
+
     <meta name="WebPartPageExpansion" content="full" />
     <!-- Add your CSS styles to the following file -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />
     <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" />
     <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css" />
     <link rel="stylesheet" href="css/angucomplete-alt.css" />
     <link rel="stylesheet" href="common/directives/mfb/mfb.min.css" />
+    <link rel="stylesheet" href="common/directives/am.multiselect/multiselect.css" />
+    <link href="common/directives/peoplepicker/sp-peoplepicker.min.css" rel="stylesheet" />
+
     <link rel="stylesheet" href="css/style.css" />
-  
+
     <!-- Add your JavaScript to the following file -->
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     <script type="text/javascript" src="https://code.angularjs.org/1.4.12/angular.js"></script>
@@ -34,9 +46,16 @@
     <script type="text/javascript" src="http://ui-grid.info/docs/grunt-scripts/vfs_fonts.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.5.0/ui-bootstrap-tpls.min.js"></script>
     <script type="text/javascript" charset="utf-8" src="https://ghiden.github.io/angucomplete-alt/js/libs/angucomplete-alt.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.SPServices/2014.02/jquery.SPServices.min.js"></script>
+
     <script type="text/javascript" src="../vendor/angular-ui/bootstrap/ui-bootstrap-dialogs.js"></script>
 
+    <script type="text/javascript" src="common/directives/ngHttpLoader/angular-http-loader.min.js"></script>
+    <script type="text/javascript" src="common/directives/am.multiselect/am.multiselect.js"></script>
     <script type="text/javascript" src="common/directives/mfb/mfb-directive.js"></script>
+    <script type="text/javascript" src="common/directives/pagination/dirPagination.js"></script>
+    <script type="text/javascript" src="common/directives/peoplepicker/sp-peoplepicker.js"></script>
+    <!-- Source https://github.com/jasonvenema/sharepoint-angular-peoplepicker -->
 
     <script type="text/javascript" src="common/services/utililities.js"></script>
     <!-- Models -->
@@ -49,8 +68,12 @@
     <script type="text/javascript" src="common/resources/trainingattendances.js"></script>
     <script type="text/javascript" src="common/resources/trainingreports.js"></script>
     <!-- Controllers -->
+    <script type="text/javascript" src="app/traininglogs/people/people.js"></script>
     <script type="text/javascript" src="app/traininglogs/trainings/trainings.js"></script>
-    <script type="text/javascript" src="app/traininglogs/traininglogs.js"></script>
+    <script type="text/javascript" src="app/traininglogs/departments/departments.js"></script>
+    <script type="text/javascript" src="app/traininglogs/positions/positions.js"></script>
+    <script type="text/javascript" src="app/traininglogs/locations/locations.js"></script>
+    <script type="text/javascript" src="app/traininglogs/logs/traininglogs.js"></script>
     <script type="text/javascript" src="app/traininglogs/reports/reports.js"></script>
 
     <script type="text/javascript" src="app/app.js"></script>
@@ -59,14 +82,19 @@
 
 <%-- The markup in the following Content element will be placed in the TitleArea of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderPageTitleInTitleArea" runat="server">
-   <!-- Trainings Logs Application-->
+    <!-- Trainings Logs Application-->
 </asp:Content>
 
 <%-- The markup and script in the following Content element will be placed in the <body> of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderMain" runat="server">
 
     <div class="container-fluid" data-ng-app="app">
-        <h1>Trainings Log Application</h1>
+        <!--       <h1>Trainings Log Application</h1>-->
+        <div id="notification-area">
+            <div ng-http-loader methods="GET" title="Loading. Please wait" template="common/directives/ngHttpLoader/loader.tpl.html" ttl="1"></div>
+            <div ng-http-loader methods="POST" title="Saving. Please wait" template="common/directives/ngHttpLoader/loader.tpl.html" ttl="5"></div>
+        </div>
+        <%--<div ng-include src="'app/traininglogs/people/people-list.tpl.html'"></div>--%>
         <div data-ng-view=""></div>
         <div ng-include src="'app/mfb-buttons.tpl.html'"></div>
     </div>

@@ -1,6 +1,6 @@
 angular.module('resources.trainingreports', ['resources.traininglogs', 'resources.attendances', 'resources.people', 'resources.trainings'])
 
-.factory('TrainingReports', ['$filter', '$log', 'TrainingLogs', 'Attendances', 'People', function ($filter, $log, TrainingLogs, Attendances, People) {
+.factory('TrainingReports', ['$filter', '$log', '$q', 'TrainingLogs', 'Attendances', 'People', function ($filter, $log, $q, TrainingLogs, Attendances, People) {
 
     var TrainingReports = {};
 
@@ -22,42 +22,42 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
 
         var deferred = $q.defer();
 
-        if (reportData === null) {
 
-            reportData = [];
-            return;
-            Attendances.fetchAll().then(function (attendances) {
 
-                angular.forEach(attendances, function (attendance, key) {
+        reportData = [];
 
-                    var reportRecord = {};
+        TrainingLogs.fetchAll().then(function (traininglogs) {
 
-                    var traininglog = TrainingLogs.fetchById(attendance.traininglogId);
+            angular.forEach(traininglogs, function (traininglog, k) {
 
-                    var training = traininglog.training;
+                angular.forEach(traininglog.attendances, function (attendance, k1) {
 
-                    reportRecord.traininglogId = attendance.traininglogId;
-                    reportRecord.training = training;
-                    reportRecord.trainingId = training.id;
-                    reportRecord.trainingTitle = training.title;
-                    reportRecord.year = $filter('date')(traininglog.startDate, 'yyyy', 'africa/nairobi');
+                    reportRecord = {};
                     reportRecord.personId = attendance.attendee.id;
                     reportRecord.payrollNo = attendance.attendee.payrollNo;
                     reportRecord.name = attendance.attendee.name;
                     reportRecord.gender = attendance.attendee.gender;
-                    reportRecord.position = attendance.attendee.position;
-                    reportRecord.department = attendance.attendee.department;
-                    reportRecord.location = attendance.attendee.location;
+                    reportRecord.position = attendance.attendee.position.title;
+                    reportRecord.department = attendance.attendee.department.title;
+                    reportRecord.location = attendance.attendee.location.title;
+
+                    reportRecord.year = $filter('date')(traininglog.startDate, 'yyyy');
+                    reportRecord.trainingDate = $filter('date')(traininglog.startDate, 'dd/MM/yyyy');
+                    reportRecord.traininglogId = traininglog.id;
+                    reportRecord.training = traininglog.training;
+                    reportRecord.trainingId = traininglog.training.id;
+                    reportRecord.trainingTitle = traininglog.training.title;
 
                     reportData.push(reportRecord);
 
                 });
 
-                deferred.resolve(reportData);
-
             });
+            //alert('as')
+            //console.log(reportData)
+            deferred.resolve(reportData);
 
-        }
+        });
 
         return deferred.promise;
 
@@ -71,7 +71,7 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
     */
     TrainingReports.reportRecords.fetchByTraining = function (year, training) {
 
-        TrainingReports.reportRecords.fetchAll();
+        //TrainingReports.reportRecords.fetchAll();
 
         return _.filter(reportData, function (reportRecord) {
 
@@ -89,7 +89,7 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
     */
     TrainingReports.reportRecords.fetchByDepartment = function (year, dept) {
 
-        TrainingReports.reportRecords.fetchAll();
+        //TrainingReports.reportRecords.fetchAll();
 
         return _.filter(reportData, function (reportRecord) {
 
@@ -108,7 +108,7 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
     */
     TrainingReports.reportRecords.fetchByTrainingAndDepartment = function (year, training, dept) {
 
-        TrainingReports.reportRecords.fetchAll();
+        //TrainingReports.reportRecords.fetchAll();
 
         return _.filter(reportData, function (reportRecord) {
 
@@ -127,55 +127,82 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
     */
     TrainingReports.attendanceRegister.fetch = function (year, training, department) {
 
+        var deferred = $q.defer();
+
         var attendanceRegisterData = [];
 
         var people = [];
 
+        var promises = [];
+
         if (angular.isUndefined(department)) {
 
-            people = People.fetchAll();
+            promises.push(People.fetchAll());
 
         } else {
 
-            people = People.fetchByDepartment(department);
+            promises.push(People.fetchByDepartment(department));
 
         }
 
-        TrainingReports.reportRecords.fetchAll();
+        promises.push(TrainingReports.reportRecords.fetchAll());
 
-        angular.forEach(people, function (person, key) {
+        $q.all(promises).then(function (promiseResponses) {
 
-            var attendanceRecord = {};
+            people = promiseResponses[0];
 
-            var reportRecord = _.find(reportData, function (item) {
+            reportData = promiseResponses[1];
 
-                return item.personId === person.id && item.year == year && item.trainingId == training.id;
+            angular.forEach(people, function (person, key) {
+
+                var attendanceRecord = {};
+
+                var reportRecord = _.find(reportData, function (item) {
+
+                    return item.personId === person.id && item.year == year && item.training.id == training.id;
+
+                });
+
+                //Set the training attendance status
+                if (angular.isUndefined(reportRecord)) {
+
+                    attendanceRecord.attended = "No";
+
+                } else {
+
+                    attendanceRecord.attended = "Yes";
+
+                    _.merge(attendanceRecord, reportRecord);
+
+                }
+
+                attendanceRecord.year = year;
+
+                attendanceRecord.trainingTitle = training.title;
+
+                attendanceRecord.payrollNo = person.payrollNo;
+
+                attendanceRecord.name = person.name;
+
+                attendanceRecord.gender = person.gender;
+
+                attendanceRecord.position = person.position.title;
+
+                attendanceRecord.department = person.department.title;
+
+                attendanceRecord.location = person.location.title;
+
+                //_.merge(attendanceRecord, _.omit(person, ['id'])); //Remove id property form the person object and merge it wih the attendance record object
+
+                attendanceRegisterData.push(attendanceRecord);
 
             });
 
-            if (angular.isUndefined(reportRecord)) { //Set the training attendance status
-
-                attendanceRecord.attended = 0;
-
-            } else {
-
-                attendanceRecord.attended = 1;
-
-                _.merge(attendanceRecord, reportRecord);
-
-            }
-
-            attendanceRecord.year = year;
-
-            attendanceRecord.trainingTitle = training.title;
-
-            _.merge(attendanceRecord, _.omit(person, ['id'])); //Remove id property form the person object and merge it wih the attendance record object
-
-            attendanceRegisterData.push(attendanceRecord);
+            deferred.resolve(attendanceRegisterData);
 
         });
 
-        return attendanceRegisterData;
+        return deferred.promise;
 
     };
 
@@ -205,20 +232,6 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
 
     };
 
-    var allReportRecords = TrainingReports.reportRecords.fetchAll();
-
-    var allYears = _.map(allReportRecords, function (o) {
-
-        return _.pick(o, ['year']);
-
-    });
-
-    var allTrainings = _.map(allReportRecords, function (o) {
-
-        return _.pick(o, ['year', 'training']);
-
-    });
-
     /*
     *Get a unique list of years in which at least one training was conducted
     *@param {integer} year - The year when the trainings were conducted
@@ -226,21 +239,25 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
     */
     TrainingReports.uniqueYears = function () {
 
+        var deferred = $q.defer();
+
         var uniqueYears = [];
 
-        var groupedByYear = _.groupBy(allReportRecords, function (o) {
+        TrainingReports.reportRecords.fetchAll().then(function (allReportRecord) {
 
-            return o.year;
+            var uniqueRecords = _.uniqBy(allReportRecord, 'year');
+
+            angular.forEach(uniqueRecords, function (value, key) {
+
+                uniqueYears.push(value.year);
+
+            });
+
+            deferred.resolve(uniqueYears);
 
         });
 
-        angular.forEach(groupedByYear, function (value, key) {
-
-            uniqueYears.push(key);
-
-        });
-
-        return uniqueYears;
+        return deferred.promise;
     };
 
     /*
@@ -250,33 +267,35 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
     */
     TrainingReports.uniqueTrainings = function (year) {
 
+        var deferred = $q.defer();
+
         var uniqueTrainings = [];
 
-        var groupedByTraining = _(allReportRecords).filter(function (o) {
+        TrainingReports.reportRecords.fetchAll().then(function (allReportRecords) {
 
-            return o.year == year;
+            var groupedByTraining = _(allReportRecords).filter(function (o) {
 
-        }).groupBy(function (o) {
+                return o.year == year;
 
-            return o.trainingId;
+            }).groupBy(function (o) {
 
-        }).value();
+                return o.trainingId;
 
-        angular.forEach(groupedByTraining, function (value, key) {
+            }).value();
 
-            uniqueTrainings.push(value[0].training);
+            angular.forEach(groupedByTraining, function (value, key) {
+
+                uniqueTrainings.push(value[0].training);
+
+            });
+
+            deferred.resolve(uniqueTrainings);
 
         });
 
-        return uniqueTrainings;
+        return deferred.promise;
 
     };
-
-    TrainingReports.uniqueDepartments = _.groupBy(allReportRecords, function (o) {
-
-        return o.department;
-
-    });
 
     /*
     *Get attendance records (formatted for reporting) for a selected year optionally filtered by department
@@ -288,61 +307,86 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
 
         var attendanceLogMatrix = [];
 
-        var trainings = TrainingReports.uniqueTrainings(year);
+        var deferred = $q.defer();
 
-        var people = [];
+        var promises = [];
+
+        promises.push(TrainingReports.uniqueTrainings(year));
+        promises.push(TrainingReports.reportRecords.fetchAll());
 
         if (angular.isUndefined(department)) {
-
-            people = People.fetchAll();
-
+            promises.push(People.fetchAll());
         } else {
-
-            people = People.fetchByDepartment(department);
-
+            promises.push(People.fetchByDepartment(department));
         }
 
-        TrainingReports.reportRecords.fetchAll();
+        $q.all(promises).then(function (promiseResults) {
 
-        var columns = {}; //This variable will be used to fetch all the column values from the row resultant array of report records
+            var trainings, people, reportRecords;
+            var columns = {}; //This variable will be used to fetch all the column values from the resultant array of report records
 
-        angular.forEach(people, function (person, key) {
+            trainings = promiseResults[0];
 
-            var attendanceRecord = {};
+            reportRecords = promiseResults[1];
 
-            attendanceRecord.year = year;
+            people = promiseResults[2];
 
-            _.merge(attendanceRecord, _.omit(person, ['id'])); //Remove id property form the person object and merge it with the attendance record object
+            angular.forEach(people, function (person, key) {
 
-            angular.forEach(trainings, function (value, key) {
+                var attendanceRecord = {};
 
-                var training = value;
+                attendanceRecord.year = year;
 
-                var reportRecord = _.find(reportData, function (item) {
+                attendanceRecord.payrollNo = person.payrollNo;
 
-                    return item.personId === person.id && item.year == year && item.trainingId == training.id;
+                attendanceRecord.name = person.name;
+
+                attendanceRecord.gender = person.gender;
+
+                attendanceRecord.position = person.position.title;
+
+                attendanceRecord.department = person.department.title;
+
+                attendanceRecord.location = person.location.title;
+
+                //_.merge(attendanceRecord, _.omit(person, ['id'])); //Remove id property form the person object and merge it with the attendance record object
+
+                angular.forEach(trainings, function (value, key) {
+
+                    var training = value;
+
+                    var reportRecord = _.find(reportData, function (item) {
+
+                        return item.personId === person.id && item.year == year && item.trainingId == training.id;
+
+                    });
+
+                    if (angular.isUndefined(reportRecord)) { //Set the training attendance status
+
+                        attendanceRecord[training.title] = "Not attended";
+
+                    } else {
+
+                        attendanceRecord[training.title] = "Attended";
+
+                    }
+
+                    /*
+                    * Get the keys from the 'attendanceRecord' array and merge them into a single array
+                    * This will ensure that all column titles represented in the dataset are captured.
+                    */
+                    columns = _.merge(_.keys(attendanceRecord));
 
                 });
 
-                if (angular.isUndefined(reportRecord)) { //Set the training attendance status
-
-                    attendanceRecord[training.title] = 0;
-
-                } else {
-
-                    attendanceRecord[training.title] = 1;
-
-                }
-
-                columns = _.merge(_.keys(attendanceRecord)); //This will ensure that all columns titles represented the dataset are captured.
+                attendanceLogMatrix.push(attendanceRecord);
 
             });
-
-            attendanceLogMatrix.push(attendanceRecord);
+            deferred.resolve({ data: attendanceLogMatrix, columns: columns });
 
         });
 
-        return { data: attendanceLogMatrix, columns: columns };
+        return deferred.promise;
 
     };
 

@@ -1,12 +1,12 @@
 <div class="row">
     <div class="col-md-12">
-        <h2><i class="fa fa-file-text"></i> Training Titles</h2>
+        <h2><i class="fa fa-list-alt"></i> Departments</h2>
     </div>
 </div>
 <div class="row">
     <div class="col-md-12">
         <span class="pull-right">
-            <a href="#listTrainings" ng-click="addTraining()" class="btn btn-sm btn-success">
+            <a href="#listDepartments" ng-click="addDepartment()" class="btn btn-sm btn-success">
                 <i class="fa fa-plus-circle"></i>
                 Add
             </a>
@@ -17,7 +17,6 @@
                 {{link.title}}
             </a>
         </span>
-
     </div>
 </div>
 <div class="row">
@@ -28,8 +27,8 @@
                     <th>Title</th>
                     <th></th>
                 </tr>
-                <tr dir-paginate="training in trainings | itemsPerPage: 10">
-                    <td>{{training.title}}</td>
+                <tr dir-paginate="department in departments | itemsPerPage: 10">
+                    <td>{{department.title}}</td>
                     <td>
                         <div class="btn-group" uib-dropdown>
                             <button id="split-button" type="button" class="btn btn-sm btn-info"><i class="fa fa-gear"> </i> Action</button>
@@ -38,7 +37,7 @@
                                 <span class="sr-only">Split button!</span>
                             </button>
                             <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
-                                <li role="menuitem"><a href="#listTrainings" ng-click="deleteTraining(training)"><i class="fa fa-trash"> </i> Delete</a></li>
+                                <li role="menuitem"><a href="#listDepartments" ng-click="deleteDepartment(department)"><i class="fa fa-trash"> </i> Delete</a></li>
                             </ul>
                         </div>
                     </td>

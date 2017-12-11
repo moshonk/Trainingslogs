@@ -1,6 +1,8 @@
 angular.module('resources.departments', ['services.utilities'])
 
-.factory('Departments', ['$filter', '$q', 'ShptCsomService', function ($filter, $q, ShptCsomService) {
+.factory('Departments', ['$filter', '$q', 'TermStoreService', function ($filter, $q, TermStoreService) {
+
+    const DEPARTMENTS_TERMSET_GUID = '29099b0e-7913-4334-9923-037e136bd3ac';
 
     var Departments = {};
 
@@ -14,11 +16,12 @@ angular.module('resources.departments', ['services.utilities'])
 
             departmentsList = [];
 
-            ShptCsomService.loadTerms('29099b0e-7913-4334-9923-037e136bd3ac').then(function (termsData) {
+            TermStoreService.loadTerms(DEPARTMENTS_TERMSET_GUID).then(function (termsData) {
 
                 angular.forEach(termsData, function (v, k) {
                     departmentsList.push({ id: v.ID, title: v.Name });
                 });
+
                 deferred.resolve(departmentsList);
 
             }).catch(function (response) {
@@ -53,7 +56,47 @@ angular.module('resources.departments', ['services.utilities'])
 
     Departments.addDepartment = function (department) {
 
-        departmentsList.push(department);
+        var defer = $q.defer();
+
+        if (!department.id) {
+
+            TermStoreService.addTerm(department.title, DEPARTMENTS_TERMSET_GUID).then(function (response) {
+
+                department.id = response.Id;
+
+                departmentsList.push(department);
+
+                defer.resolve(department)
+
+            }).catch(function (error) {
+
+                defer.reject(error);
+
+            });
+
+        }
+
+        return defer.promise;
+
+    };
+
+    Departments.remove = function (department) {
+
+        var deferred = $q.defer();
+
+        TermStoreService.removeTerm(DEPARTMENTS_TERMSET_GUID, department.id).then(function () {
+
+            _.remove(departmentsList, { id: department.id });
+
+            deferred.resolve(departmentsList);
+
+        }).catch(function (error) {
+
+            deferred.reject(error)
+
+        });
+
+        return deferred.promise;
 
     };
 

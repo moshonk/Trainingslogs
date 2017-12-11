@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>trainingslogs</RootNamespace>
-    <AssemblyName>Trainings Logs App</AssemblyName>
+    <AssemblyName>Training Attendance Logging App</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetOfficeVersion>15.0</TargetOfficeVersion>
     <FileAlignment>512</FileAlignment>
@@ -45,20 +45,42 @@
   <ItemGroup>
     <Content Include="src\app\app.js" />
     <Content Include="src\app\mfb-buttons.tpl.html" />
+    <Content Include="src\app\traininglogs\departments\department-add.tpl.html" />
+    <Content Include="src\app\traininglogs\departments\department-list.tpl.html" />
+    <Content Include="src\app\traininglogs\departments\departments.js" />
+    <Content Include="src\app\traininglogs\locations\location-add.tpl.html" />
+    <Content Include="src\app\traininglogs\locations\location-list.tpl.html" />
+    <Content Include="src\app\traininglogs\locations\locations.js" />
+    <Content Include="src\app\traininglogs\people\people.js" />
+    <Content Include="src\app\traininglogs\positions\position-add.tpl.html" />
+    <Content Include="src\app\traininglogs\positions\position-list.tpl.html" />
+    <Content Include="src\app\traininglogs\positions\positions.js" />
     <Content Include="src\app\traininglogs\reports\reports.js" />
+    <Content Include="src\app\traininglogs\people\person-add.tpl.html" />
+    <Content Include="src\app\traininglogs\people\people-list.tpl.html" />
     <Content Include="src\app\traininglogs\reports\trainingattendance-matrix.tpl.html" />
     <Content Include="src\app\traininglogs\reports\trainingattendance-report.tpl.html" />
-    <Content Include="src\app\traininglogs\trainingattendee.tpl.html" />
-    <Content Include="src\app\traininglogs\traininglog-add.tpl.html" />
-    <Content Include="src\app\traininglogs\traininglog-edit.tpl.html" />
-    <Content Include="src\app\traininglogs\traininglog-list.tpl.html" />
-    <Content Include="src\app\traininglogs\traininglogs.js" />
+    <Content Include="src\app\traininglogs\logs\trainingattendee.tpl.html" />
+    <Content Include="src\app\traininglogs\logs\traininglog-add.tpl.html" />
+    <Content Include="src\app\traininglogs\logs\traininglog-edit.tpl.html" />
+    <Content Include="src\app\traininglogs\logs\traininglog-list.tpl.html" />
+    <Content Include="src\app\traininglogs\logs\traininglogs.js" />
     <Content Include="src\app\traininglogs\trainings\training-add.tpl.html" />
     <Content Include="src\app\traininglogs\trainings\training-list.tpl.html" />
     <Content Include="src\app\traininglogs\trainings\trainings.js" />
+    <Content Include="src\common\directives\am.multiselect\multiselect.css" />
+    <Content Include="src\common\directives\am.multiselect\multiselect.tmpl.html" />
+    <Content Include="src\common\directives\am.multiselect\singleselect.tmpl.html" />
     <Content Include="src\common\directives\mfb\mfb-directive.js" />
     <Content Include="src\common\directives\mfb\mfb.min.css" />
     <Content Include="src\common\directives\modal.js" />
+    <Content Include="src\common\directives\am.multiselect\am.multiselect.js" />
+    <Content Include="src\common\directives\ngHttpLoader\angular-http-loader.min.js" />
+    <Content Include="src\common\directives\ngHttpLoader\loader.tpl.html" />
+    <Content Include="src\common\directives\pagination\dirPagination.js" />
+    <Content Include="src\common\directives\pagination\dirPagination.tpl.html" />
+    <Content Include="src\common\directives\peoplepicker\sp-peoplepicker.js" />
+    <Content Include="src\common\directives\peoplepicker\sp-peoplepicker.min.css" />
     <Content Include="src\common\resources\departments.js" />
     <Content Include="src\common\resources\locations.js" />
     <Content Include="src\common\resources\people.js" />
@@ -71,6 +93,9 @@
     <Content Include="src\css\angucomplete-alt.css" />
     <Content Include="src\css\style.css" />
     <Content Include="vendor\angular-ui\bootstrap\ui-bootstrap-dialogs.js" />
+    <Content Include="Webparts\TrainingLogsClientWebPart\Elements.xml">
+      <OpcRelationship>feature-elementmanifest</OpcRelationship>
+    </Content>
     <None Include="packages.config" />
     <None Include="Pages\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{798462f8-e3b8-42dc-b6a2-344921d34e9e}</SharePointProjectItemId>
@@ -80,6 +105,9 @@
     <Content Include="src\Default.aspx" />
     <None Include="SharePointProjectItem.spdata">
       <SharePointProjectItemId>{3887a258-147e-4c77-a681-19c65e70c58a}</SharePointProjectItemId>
+    </None>
+    <None Include="Webparts\TrainingLogsClientWebPart\SharePointProjectItem.spdata">
+      <SharePointProjectItemId>{c2738127-d69b-44bf-ae57-34c0e70e3b7a}</SharePointProjectItemId>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +159,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\assets\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

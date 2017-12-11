@@ -1,5 +1,5 @@
-<div ng-controller="reportsCtrl">
-  <h2>Training Attendance Matrix</h2>
+<div>
+  <h2><i class="fa fa-list-alt"></i> Training Attendance Matrix</h2>
 
   <div class="row">
     
@@ -13,15 +13,14 @@
       </div>
     </div>
     
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="department" class="form-label">Department</label>
-        <select name="department" id="year" ng-model="department" class="form-control">
-          <option value="">Select Department</option>
-          <option ng-repeat="department in departments">{{department}}</option>
-        </select>
+      <div class="col-md-3">
+          <div class="form-group">
+              <label for="department" class="form-label">Department</label>
+              <select name="department" id="department" ng-model="department" class="form-control" ng-options="department as department.title for department in departments track by department.id">
+                  <option value="">Select Department</option>
+              </select>
+          </div>
       </div>
-    </div>
     
     <div class="col-md-3">
       <div class="form-group">

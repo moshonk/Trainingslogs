@@ -1,61 +1,85 @@
 angular.module('resources.traininglogs', ['resources.trainings', 'resources.attendances', 'services.utilities'])
 
-.factory('TrainingLogs', ['$filter', '$q', 'ArrayUtils', 'Trainings', 'Attendances', 'ShptRestService', function ($filter, $q, ArrayUtils, Trainings, Attendances, ShptRestService) {
+.factory('TrainingLogs', ['$filter', '$q', 'ArrayUtils', 'Trainings', 'Attendances', 'ShptRestService',
+    function ($filter, $q, ArrayUtils, Trainings, Attendances, ShptRestService) {
 
-    var TrainingLogs = {};
+        var TrainingLogs = {};
 
-    var logs = null;
+        var logs = null;
 
-    var trainings = null;
+        var trainings = null;
 
-    var getLog = function (selectedLog) {
+        const TRAINING_LOGS_LIST_NAME = 'Trainingslog';
 
-        var returnedLogs = $filter('filter')(logs, { id: selectedLog.id });
+        var getLog = function (selectedLog) {
 
-        return returnedLogs[0];
+            var returnedLogs = $filter('filter')(logs, { id: selectedLog.id });
 
-    };
+            return returnedLogs[0];
 
-    TrainingLogs.fetchAll = function () {
+        };
 
-        var deferred = $q.defer();
+        TrainingLogs.fetchAll = function () {
 
-        if (logs === null) {
+            var deferred = $q.defer();
 
-            logs = [];
+            if (logs === null) {
 
-            var promises = [];
+                logs = [];
 
-            promises.push(Attendances.fetchAll());
+                Attendances.fetchAll().then(function (attendances) {
 
-            $q.all(promises).then(function (response) {
+                    var facilitatorPromises = [];
 
-                var viewXml = '<View><Query></Query></View>';
+                    var viewXml = '<View><Query></Query></View>';
+                    ShptRestService.getListItemsWithCaml(TRAINING_LOGS_LIST_NAME, viewXml).then(function (data) { //Using caml to so that we can expand the Taxonomy field, TargetDepartment
 
-                attendances = response[0];
-
-                ShptRestService.getListItemsWithCaml('Trainingslog', viewXml).then(function (data) {
-
-                    angular.forEach(data.results, function (v, k) {
-                        var traininglog = {};
-                        traininglog.id = v.ID;
-                        traininglog.startDate = v.StartDate;
-                        traininglog.target = v.Target;
-                        if (traininglog.target = "selected") {
-                            traininglog.targetDepartment = v.TargetDepartment.results;
-                        }
-                        traininglog.training = { title: v.TrainingTitle.Label, id: v.TrainingTitle.WssId, guid: v.TrainingTitle.TermGuid };
-                        traininglog.attendances = _.filter(attendances, { traininglogId: v.ID });
-
-                        //Get the facilitator(s)
-                        var queryParams = '$select=Facilitator/ID,Facilitator/Title&$expand=Facilitator&$filter=ID eq ' + traininglog.id;
-                        ShptRestService.getListItems('Trainingslog', queryParams).then(function (data) {
-                            if (data.results.length > 0) {
-                                traininglog.facilitator = [];
-                                angular.forEach(data.results[0].Facilitator.results, function (facilitator, key) {
-                                    traininglog.facilitator.push({ title: facilitator.Title, id: facilitator.ID });
+                        angular.forEach(data.results, function (v, k) {
+                            var traininglog = {};
+                            traininglog.id = v.ID;
+                            traininglog.startDate = new Date(v.StartDate);
+                            traininglog.target = v.Target;
+                            if (traininglog.target == "selected") {
+                                traininglog.targetDepartment = [];
+                                angular.forEach(v.TargetDepartment.results, function (department, k) {
+                                    traininglog.targetDepartment.push({ title: department.Label, id: department.TermGuid });
                                 });
-                                logs.push(traininglog);
+                            }
+                            traininglog.training = { title: v.TrainingTitle.Label, id: v.TrainingTitle.TermGuid };
+                            traininglog.attendances = _.filter(attendances, { traininglogId: v.ID });
+
+                            //Get the facilitator(s)
+                            //Here we make use of oData to fetch user details(Name, Title, Email)
+                            var queryParams = '$select=Facilitator/ID,Facilitator/Title,Facilitator/Name,Facilitator/EMail&$expand=Facilitator&$filter=ID eq ' + traininglog.id;
+                            facilitatorPromises.push(ShptRestService.getListItems(TRAINING_LOGS_LIST_NAME, queryParams));
+
+                            logs.push(traininglog);
+
+                        });
+
+                        $q.all(facilitatorPromises).then(function (facilitatorPromiseResponses) {
+
+                            for (var i = 0; i < facilitatorPromiseResponses.length; i++) {
+
+                                var data = facilitatorPromiseResponses[i];
+
+                                logs[i].facilitator = [];
+
+                                if (data.results.length > 0) {
+
+                                    angular.forEach(data.results[0].Facilitator.results, function (facilitator, key) {
+
+                                        logs[i].facilitator.push({
+                                            Login: facilitator.Name,
+                                            Name: facilitator.Title,
+                                            Email: facilitator.EMail,
+                                            Id: facilitator.ID
+                                        });
+
+                                    });
+
+                                }
+
                             }
 
                             deferred.resolve(logs);
@@ -66,95 +90,242 @@ angular.module('resources.traininglogs', ['resources.trainings', 'resources.atte
 
                 });
 
-            });
+            } else {
 
-        } else {
+                deferred.resolve(logs);
 
-            deferred.resolve(logs);
+            }
+
+            return deferred.promise;
 
         }
 
-        return deferred.promise;;
+        TrainingLogs.fetchById = function (id) {
 
-    }
+            var deferred = $q.defer();
 
-    TrainingLogs.fetchById = function (id) {
+            TrainingLogs.fetchAll().then(function (logs) {
+                id = parseInt(id);
+                var returnedTraininglog = _.find(logs, { "id": id });
 
-        var deferred = $q.defer();
+                deferred.resolve(returnedTraininglog);
 
-        TrainingLogs.fetchAll().then(function (logs) {
+            });
 
-            var returnedTraininglog = _.find(logs, { id: id });
+            return deferred.promise;
 
-            deferred.resolve(returnedTraininglog);
+        };
 
-        });
+        TrainingLogs.addLog = function (traininglog) {
 
-        return deferred.promise;
+            var deferred = $q.defer();
 
-    };
+            var promises = [];
 
-    TrainingLogs.addLog = function (traininglog) {
+            //Ensure that all selected users have been added to the site 
+            angular.forEach(traininglog.facilitator, function (facilitator, k) {
 
-        logs.push(traininglog);
-        //TODO persist to db
+                promises.push(ShptRestService.ensureUser(facilitator.Login));
 
-    };
+            });
 
-    TrainingLogs.updateLog = function (traininglog) {
+            $q.all(promises).then(function (promiseResults) {
 
-        ArrayUtils.updateByAttr(AttendanceList, 'id', traininglog.id, traininglog);
+                var facilitatorIds, targetDepartments, promises;
+                var data = {};
 
-        //TODO persist to db;
+                facilitatorIds = [];
+                for (var i = 0; i < traininglog.facilitator.length; i++) {
+                    var user = promiseResults[i];
+                    traininglog.facilitator[i].id = user.id;
+                    facilitatorIds.push(user.Id);
+                }
 
-    };
+                data = {
+                    Title: traininglog.training.title + ' Training',
+                    StartDate: traininglog.startDate,
+                    Target: traininglog.target,
+                    FacilitatorId: { results: facilitatorIds },
+                    TrainingTitle: {
+                        "TermGuid": traininglog.training.id,
+                        "WssId": -1
+                    }
+                };
 
-    TrainingLogs.remove = function (traininglog) {
+                if (traininglog.target == 'selected') {
+                    /*
+                    * Update the target departments (Multi value taxonomy field)
+                    */
+                    targetDepartments = "";
+                    for (var i = 0; i < traininglog.targetDepartment.length; i++) {
 
-        ArrayUtils.removeByAttr(logs, 'id', traininglog.id);
+                        targetDepartments += '-1;#' + traininglog.targetDepartment[i].title +
+                                            "|" + traininglog.targetDepartment[i].id + ';#';
 
-    };
+                    }
 
-    TrainingLogs.addAttendee = function (selectedTraininglog) {
+                    ShptRestService.getMultiValueTaxonomyHiddenNoteFieldName(TRAINING_LOGS_LIST_NAME, 'TargetDepartment').then(function (hiddenNoteFieldName) {
 
-        Attendance.addAttendee(selectedTraininglog);
+                        data[hiddenNoteFieldName] = targetDepartments;
 
-        selectedTraininglog.attendances.push(selectedTraininglog.attendance);
+                        TrainingLogs.saveLogToDatabase(traininglog, data).then(function (response) {
 
-    };
+                            deferred.resolve(response);
 
-    TrainingLogs.updateAttendee = function (selectedTraininglog) {
+                        }).catch(function (error) {
 
-        Attendance.updateAttendee(selectedTraininglog);
+                            deferred.reject(error);
 
-    };
+                        });
 
-    TrainingLogs.removeAttendee = function (selectedTraininglog, attendee) {
 
-        Attendance.removeAttendee(selectedTraininglog, attendee);
+                    }).catch(function (error) {
 
-    };
+                        deferred.reject(error);
 
-    /*
-    *Check if person is in the attendance list for a training
-    *@param {object} traininglog - Training Log (Contains attendance list)
-    *@param {object} person - Person to search for in attendance list
-    *@returns {bool} True if person has been registred for training , Faklse if not
-    */
-    TrainingLogs.isPersonInAttendanceList = function (traininglog, person) {
+                    });
 
-        var attendanceList = traininglog.attendances;
+                } else {
 
-        var found = _.some(attendanceList, function (attendance) {
+                    TrainingLogs.saveLogToDatabase(traininglog, data).then(function (response) {
 
-            return attendance.attendee.id == person.id;
+                        deferred.resolve(response);
 
-        });
+                    }).catch(function (error) {
 
-        return found;
+                        deferred.reject(error);
 
-    };
+                    });
 
-    return TrainingLogs;
+                }
 
-}]);
+            });
+
+            return deferred.promise;
+
+        };
+
+        TrainingLogs.saveLogToDatabase = function (traininglog, data) {
+
+            var deferred = $q.defer();
+
+            if (angular.isUndefined(traininglog.id)) {
+
+                ShptRestService.createNewListItem(TRAINING_LOGS_LIST_NAME, data).then(function (response) {
+
+                    traininglog.id = response.ID;
+
+                    traininglog.attendances = [];
+
+                    logs.push(traininglog);
+
+                    deferred.resolve(traininglog);
+
+                }).catch(function (error) {
+
+                    deferred.reject(error);
+
+                });
+
+            } else {
+
+                ShptRestService.updateListItem(TRAINING_LOGS_LIST_NAME, traininglog.id, data).then(function (response) {
+
+                    //Update Training logs list
+                    logs = ArrayUtils.updateItemInArray(logs, traininglog, { id: traininglog.id });
+
+                    deferred.resolve(traininglog);
+
+                }).catch(function (error) {
+
+                    deferred.reject(error);
+
+                });
+
+            }
+
+            return deferred.promise;
+
+        };
+
+        TrainingLogs.updateLog = function (traininglog) {
+
+            ArrayUtils.updateByAttr(AttendanceList, 'id', traininglog.id, traininglog);
+
+            //TODO persist to db;
+
+        };
+
+        TrainingLogs.remove = function (traininglog) {
+
+            var deferred = $q.defer();
+
+            ShptRestService.deleteListItem(TRAINING_LOGS_LIST_NAME, traininglog.id).then(function () {
+
+                logs = _.remove(logs, { id: traininglog.id });
+
+                deferred.resolve(logs);
+
+            }).catch(function (error) {
+
+                deferred.reject(error)
+
+            });
+
+            return deferred.promise;
+
+        };
+
+        TrainingLogs.addAttendee = function (selectedTraininglog) {
+
+            var deferred = $q.defer();
+
+            Attendances.addAttendee(selectedTraininglog).then(function (attendance) {
+
+                deferred.resolve(attendance);
+
+            }).catch(function (error) {
+
+                deferred.reject(error);
+
+            });
+
+            return deferred.promise;
+
+        };
+
+        TrainingLogs.updateAttendee = function (selectedTraininglog) {
+
+            Attendances.updateAttendee(selectedTraininglog);
+
+        };
+
+        TrainingLogs.removeAttendee = function (selectedTraininglog, attendance) {
+
+            return Attendances.removeAttendee(selectedTraininglog, attendance);
+
+        };
+
+        /*
+        *Check if person is in the attendance list for a training
+        *@param {object} traininglog - Training Log (Contains attendance list)
+        *@param {object} person - Person to search for in attendance list
+        *@returns {bool} True if person has been registred for training , Faklse if not
+        */
+        TrainingLogs.isPersonInAttendanceList = function (traininglog, person) {
+
+            var attendanceList = traininglog.attendances;
+
+            var found = _.some(attendanceList, function (attendance) {
+
+                return attendance.attendee.id == person.id;
+
+            });
+
+            return found;
+
+        };
+
+        return TrainingLogs;
+
+    }]);

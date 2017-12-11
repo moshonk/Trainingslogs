@@ -1,24 +1,25 @@
 ﻿angular.module('trainings', ['ui.bootstrap.dialogs', 'resources.trainings'])
 
-.controller('trainingCtrl', ['$scope', '$log', '$routeParams', '$location', '$dialog', '$dialogConfirm', 'Trainings', function ($scope, $log, $routeParams, $location, $dialog, $dialogConfirm, Trainings) {
+.controller('trainingCtrl', ['$scope', '$log', '$routeParams', '$location', '$dialog', '$dialogConfirm', '$dialogAlert', 'UtilService', 'Trainings', function ($scope, $log, $routeParams, $location, $dialog, $dialogConfirm, $dialogAlert, UtilService, Trainings) {
 
-    $scope.int = function () {
+    $scope.init = function () {
 
-        $scope.trainings = Trainings.fetchAll();
+        Trainings.fetchAll().then(function (trainings) {
 
+            $scope.trainings = trainings;
+
+        });
+
+        $scope.links = UtilService.getAppShortcutlinks();
     };
 
     var trainingId = $routeParams.id;
 
-    if (!angular.isUndefined(trainingId)) { //View existing training log 
+    if (!angular.isUndefined(trainingId)) { //View existing training 
 
         trainingId = parseInt($routeParams.id);
 
         $scope.training = Trainings.fetchById(trainingId);
-
-    } else { //Add new Training
-
-        $scope.training = {};
 
     }
 
@@ -26,24 +27,53 @@
 
         $scope.training = {};
 
-        $dialog('training-add.tpl.html', 'md').then(function (traininglog) {
+        $dialog('app/traininglogs/trainings/training-add.tpl.html', 'lg').then(function (training) {
 
-            //$location.path( "/editTraining/" + training.id );
+            $location.path("/listTrainings/");
 
         });
 
-        //$location.path("/editTraining/" + $scope.training.id);
+    };
+
+    $scope.editTraining = function (training) {
+
+        var trainingDataWrapper = { scopeVariableName: 'training', dataObject: training };
+
+        $dialog('app/traininglogs/trainings/training-add.tpl.html', 'lg', trainingDataWrapper).then(function (training) {
+
+            $location.path("/listTrainings/");
+
+        });
+
     };
 
     this.updateTraining = function (training) {
 
-        if (!trainingId) { //Add a new Training Log
+        Trainings.addTraining(training).then(function (training) {
 
-            Trainings.addTraining(training);
+            UtilService.showSuccessMessage('#notification-area', 'Training updated successfully!!');
 
-        } else { //Update exisiting Training log
+        }).catch(function (error) {
 
-            Trainings.updateTraining(training);
+            $dialogAlert(error, 'Unable to update training');
+
+        });
+
+    };
+
+    $scope.deleteTraining = function (training) {
+
+        if (training) {
+
+            $dialogConfirm('Are you sure you want to delete this record (' + training.title + ' )', 'Delete Training').then(function () {
+
+                Trainings.remove(training).then(function (data) {
+
+                    $scope.trainings = data;
+
+                });
+
+            });
 
         }
 
@@ -55,16 +85,25 @@
 
             $dialogConfirm('Are you sure you want to delete this record (' + training.title + ' )', 'Delete Training').then(function () {
 
-                Trainings.removeTraining(training).then(function (data) {
+                Trainings.remove(training).then(function (data) {
 
                     $scope.trainings = data;
 
+                    UtilService.showSuccessMessage('#notification-area', 'Training deleted successfully!!');
+
+                }).catch(function (error) {
+
+                    $dialogAlert(error, 'Unable to delete record');
+
                 });
+
 
             });
 
         }
 
     };
+
+    $scope.init();
 
 }]);

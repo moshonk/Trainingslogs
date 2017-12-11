@@ -1,10 +1,12 @@
-angular.module('resources.trainings', ['resources.departments'])
+angular.module('resources.trainings', ['services.utilities', 'resources.departments'])
 
-.factory('Trainings', ['$filter', '$log', '$q', 'Departments', function ($filter, $log, $q, Departments) {
+.factory('Trainings', ['$filter', '$log', '$q', 'TermStoreService', function ($filter, $log, $q, TermStoreService) {
 
     var Trainings = {};
 
     var trainingsList = null;
+
+    const TRAININGS_TERMSET_GUID = '64bc860c-3d44-4978-933a-d9d0fe24b885';
 
     Trainings.fetchAll = function () {
 
@@ -14,13 +16,23 @@ angular.module('resources.trainings', ['resources.departments'])
 
             trainingsList = [];
 
-            trainingsList.push(
-              { id: 1, title: 'Health & Safety Policy', target: ['ICT', 'HSRE'] },
-              { id: 2, title: 'Risk Assessment Policy', target: ['All'] }
-              );
+            TermStoreService.loadTerms(TRAININGS_TERMSET_GUID).then(function (termsData) {
+
+                angular.forEach(termsData, function (v, k) {
+                    trainingsList.push({ id: v.ID, title: v.Name });
+                });
+
+                deferred.resolve(trainingsList);
+
+            }).catch(function (response) {
+
+                deferred.reject(response);
+
+            });
+
+        } else {
 
             deferred.resolve(trainingsList);
-
         }
 
         return deferred.promise;
@@ -44,30 +56,49 @@ angular.module('resources.trainings', ['resources.departments'])
 
     Trainings.addTraining = function (training) {
 
-        trainingsList.push(training);
+        var defer = $q.defer();
+
+        if (!training.id) {
+
+            TermStoreService.addTerm(training.title, TRAININGS_TERMSET_GUID).then(function (response) {
+                
+                training.id = response.Id;
+
+                trainingsList.push(training);
+
+                defer.resolve(training)
+
+            }).catch(function (error) {
+
+                defer.reject(error);
+
+            });
+
+        }
+
+        return defer.promise;
 
     };
 
-    Trainings.removeTraining = function (training) {
-
-        var thatTraining = _.find(trainingsList, function (thatTraining) {
-
-            return thatTraining.id == training.id;
-
-        });
+    Trainings.remove = function (training) {
 
         var deferred = $q.defer();
 
-        trainingsList = _.without(trainingsList, thatTraining);
+        TermStoreService.removeTerm(TRAININGS_TERMSET_GUID, training.id).then(function () {
 
-        deferred.resolve(trainingsList);
+            _.remove(trainingsList, { id: training.id });
+
+            deferred.resolve(trainingsList);
+
+        }).catch(function (error) {
+
+            deferred.reject(error)
+
+        });
 
         return deferred.promise;
 
-        //TODO Perist removal to database
-
     };
-
 
     return Trainings;
 

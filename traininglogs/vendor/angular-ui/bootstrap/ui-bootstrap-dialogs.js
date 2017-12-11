@@ -59,17 +59,23 @@ angular.module('ui.bootstrap.dialogs', ['ui.bootstrap'])
 })
  
 .factory('$dialog', function ($uibModal) {
-    return function (templateUrl, size) {
+    return function (templateUrl, size, dataWrapper) {
       
-      size = angular.isUndefined(size) ? 'md' : size;
+      size = size || 'md';
       
       var modal = $uibModal.open({
         size: size,
         templateUrl: templateUrl, // loads the template
         backdrop: true, // setting backdrop allows us to close the modal window on clicking outside the modal window
         windowClass: 'modal', // windowClass - additional CSS class(es) to be added to a modal window template
-        controller: function ($scope, $injector, $uibModalInstance, $log) {
-          
+        controller: function ($scope, $injector, $uibModalInstance, $log, data) {
+            
+            if (!angular.equals(data, {})) {
+
+                $scope[data.scopeVariableName] = data.dataObject;
+
+            }
+
             $scope.submit = function (frm, data) {
 
               if (frm.$valid) {
@@ -78,14 +84,16 @@ angular.module('ui.bootstrap.dialogs', ['ui.bootstrap'])
                 
               }
                 
-            }  
+            }
+
             $scope.cancel = function () {
                 $uibModalInstance.dismiss('cancel'); 
             };
+
         },
         resolve: { 
             data: function () {
-                return "Done";
+                return dataWrapper || {};
             }
         }
     });//end of modal.open

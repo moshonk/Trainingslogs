@@ -17,18 +17,40 @@
     <File Path="src\app\mfb-buttons.tpl.html" Url="src/app/mfb-buttons.tpl.html" ReplaceContent="TRUE" />
     <File Path="src\app\traininglogs\trainings\trainings.js" Url="src/app/traininglogs/trainings/trainings.js" ReplaceContent="TRUE" />
     <File Path="src\app\traininglogs\reports\reports.js" Url="src/app/traininglogs/reports/reports.js" ReplaceContent="TRUE" />
-    <File Path="src\app\traininglogs\traininglogs.js" Url="src/app/traininglogs/traininglogs.js" ReplaceContent="TRUE" />
-    <File Path="src\app\traininglogs\traininglog-list.tpl.html" Url="src/app/traininglogs/traininglog-list.tpl.html" ReplaceContent="TRUE" />
-    <File Path="src\app\traininglogs\traininglog-edit.tpl.html" Url="src/app/traininglogs/traininglog-edit.tpl.html" ReplaceContent="TRUE" />
-    <File Path="src\app\traininglogs\traininglog-add.tpl.html" Url="src/app/traininglogs/traininglog-add.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\logs\traininglogs.js" Url="src/app/traininglogs/logs/traininglogs.js" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\logs\traininglog-list.tpl.html" Url="src/app/traininglogs/logs/traininglog-list.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\logs\traininglog-edit.tpl.html" Url="src/app/traininglogs/logs/traininglog-edit.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\logs\traininglog-add.tpl.html" Url="src/app/traininglogs/logs/traininglog-add.tpl.html" ReplaceContent="TRUE" />
     <File Path="src\app\traininglogs\trainings\training-list.tpl.html" Url="src/app/traininglogs/trainings/training-list.tpl.html" ReplaceContent="TRUE" />
     <File Path="src\app\traininglogs\trainings\training-add.tpl.html" Url="src/app/traininglogs/trainings/training-add.tpl.html" ReplaceContent="TRUE" />
     <File Path="src\app\traininglogs\reports\trainingattendance-matrix.tpl.html" Url="src/app/traininglogs/reports/trainingattendance-matrix.tpl.html" ReplaceContent="TRUE" />
     <File Path="src\app\traininglogs\reports\trainingattendance-report.tpl.html" Url="src/app/traininglogs/reports/trainingattendance-report.tpl.html" ReplaceContent="TRUE" />
     <File Path="src\common\services\utililities.js" Url="src/common/services/utililities.js" ReplaceContent="TRUE" />
-    <File Path="src\app\traininglogs\trainingattendee.tpl.html" Url="src/app/traininglogs/trainingattendee.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\logs\trainingattendee.tpl.html" Url="src/app/traininglogs/logs/trainingattendee.tpl.html" ReplaceContent="TRUE" />
     <File Path="src\Default.aspx" Url="src/Default.aspx" ReplaceContent="TRUE" />
     <File Path="src\common\resources\positions.js" Url="src/common/resources/positions.js" ReplaceContent="TRUE" />
     <File Path="src\common\resources\locations.js" Url="src/common/resources/locations.js" ReplaceContent="TRUE" />
+    <File Path="src\common\directives\am.multiselect\am.multiselect.js" Url="src/common/directives/am.multiselect/am.multiselect.js" ReplaceContent="TRUE" />
+    <File Path="src\common\directives\am.multiselect\multiselect.tmpl.html" Url="src/common/directives/am.multiselect/multiselect.tmpl.html" ReplaceContent="TRUE" />
+    <File Path="src\common\directives\am.multiselect\singleselect.tmpl.html" Url="src/common/directives/am.multiselect/singleselect.tmpl.html" ReplaceContent="TRUE" />
+    <File Path="src\common\directives\am.multiselect\multiselect.css" Url="src/common/directives/am.multiselect/multiselect.css" ReplaceContent="TRUE" />
+    <File Path="src\common\directives\peoplepicker\sp-peoplepicker.min.css" Url="src/common/directives/peoplepicker/sp-peoplepicker.min.css" ReplaceContent="TRUE" />
+    <File Path="src\common\directives\peoplepicker\sp-peoplepicker.js" Url="src/common/directives/peoplepicker/sp-peoplepicker.js" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\people\people-list.tpl.html" Url="src/app/traininglogs/people/people-list.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\people\person-add.tpl.html" Url="src/app/traininglogs/people/person-add.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\people\people.js" Url="src/app/traininglogs/people/people.js" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\departments\department-add.tpl.html" Url="src/app/traininglogs/departments/department-add.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\departments\department-list.tpl.html" Url="src/app/traininglogs/departments/department-list.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\departments\departments.js" Url="src/app/traininglogs/departments/departments.js" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\locations\location-add.tpl.html" Url="src/app/traininglogs/locations/location-add.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\locations\location-list.tpl.html" Url="src/app/traininglogs/locations/location-list.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\locations\locations.js" Url="src/app/traininglogs/locations/locations.js" ReplaceContent="TRUE" />
+    <File Path="src\common\directives\pagination\dirPagination.js" Url="src/common/directives/pagination/dirPagination.js" ReplaceContent="TRUE" />
+    <File Path="src\common\directives\pagination\dirPagination.tpl.html" Url="src/common/directives/pagination/dirPagination.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\positions\position-add.tpl.html" Url="src/app/traininglogs/positions/position-add.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\positions\position-list.tpl.html" Url="src/app/traininglogs/positions/position-list.tpl.html" ReplaceContent="TRUE" />
+    <File Path="src\app\traininglogs\positions\positions.js" Url="src/app/traininglogs/positions/positions.js" ReplaceContent="TRUE" />
+    <File Path="src\common\directives\ngHttpLoader\angular-http-loader.min.js" Url="src/common/directives/ngHttpLoader/angular-http-loader.min.js" ReplaceContent="TRUE" />
+    <File Path="src\common\directives\ngHttpLoader\loader.tpl.html" Url="src/common/directives/ngHttpLoader/loader.tpl.html" ReplaceContent="TRUE" />
   </Module>
 </Elements>

@@ -1,19 +1,33 @@
 ﻿angular.module('reports', ['resources.trainingreports', 'resources.trainings', 'resources.departments'])
 
-.controller('reportsCtrl', ['$scope', '$log', 'TrainingReports', 'Trainings', 'Departments', function ($scope, $log, TrainingReports, Trainings, Departments) {
+.controller('reportsCtrl', ['$scope', '$log', '$q', 'TrainingReports', 'Trainings', 'Departments', function ($scope, $log, $q, TrainingReports, Trainings, Departments) {
 
     $scope.init = function () {
-        $scope.years = TrainingReports.uniqueYears();
-        $scope.departments = Departments.fetchAll();
-        $scope.reportData = [];
+
+        var promises = [];
+
+        promises.push(Trainings.fetchAll());
+        promises.push(Departments.fetchAll());
+        promises.push(TrainingReports.uniqueYears());
+
+        $q.all(promises).then(function (promiseResults) {
+
+            $scope.trainings = promiseResults[0];
+            $scope.departments = promiseResults[1];
+            $scope.years = promiseResults[2];
+            $scope.reportData = [];
+
+        });
+
     };
 
     $scope.attendanceReportGridOptions = {
         enableSorting: false,
         enableFiltering: true,
         columnDefs: [
-          { field: 'trainingTitle' },
+          { field: 'trainingTitle', enableFiltering: false },
           { field: 'year', enableFiltering: false },
+          { field: 'trainingDate', enableFiltering: false },
           { field: 'name', enableFiltering: false },
           { field: 'payrollNo', enableFiltering: false },
           { field: 'gender', enableSorting: false, enableFiltering: false },
@@ -49,23 +63,31 @@
 
     $scope.searchAttendanceRegister = function () {
 
+        var promises = [];
+
         if ($scope.department) {
 
-            $scope.reportData = TrainingReports.attendanceRegister.fetchByDepartment($scope.year, $scope.training, $scope.department);
+            promises.push(TrainingReports.attendanceRegister.fetchByDepartment($scope.year, $scope.training, $scope.department));
 
         } else {
 
-            $scope.reportData = TrainingReports.attendanceRegister.fetchAll($scope.year, $scope.training);
+            promises.push(TrainingReports.attendanceRegister.fetchAll($scope.year, $scope.training));
 
         }
 
-        $scope.attendanceReportGridOptions.data = $scope.reportData;
+        $q.all(promises).then(function (promiseResponses) {
+
+            $scope.reportData = promiseResponses[0];
+
+            $scope.attendanceReportGridOptions.data = $scope.reportData;
+
+        });
 
     };
 
     $scope.setUniqueTrainings = function () {
 
-        $scope.trainings = TrainingReports.uniqueTrainings($scope.year);
+        //$scope.trainings = TrainingReports.uniqueTrainings($scope.year);
 
     };
 
@@ -73,15 +95,6 @@
         enableSorting: false,
         enableFiltering: false,
         columnDefs: $scope.columns,
-        /*columnDefs: [
-          { field: 'year', enableFiltering: false },
-          { field: 'name', enableFiltering: false },
-          { field: 'payrollNo', enableFiltering: false },
-          { field: 'gender', enableSorting: false, enableFiltering: false },
-          { field: 'position', enableSorting: false, enableFiltering: false },
-          { field: 'department', enableSorting: false, enableFiltering: false },
-          { field: 'location', enableSorting: false, enableFiltering: false }
-        ],*/
         enableGridMenu: true,
         exporterCsvFilename: 'Training Log Matrix.csv',
         exporterPdfDefaultStyle: { fontSize: 9 },
@@ -108,24 +121,32 @@
 
     $scope.searchAttendanceMatrix = function () {
 
+        var promises = [];
+
         var reportData, columnDefs;
+
         if ($scope.department) {
-            reportData = TrainingReports.attendanceLogMatrix.fetch($scope.year, $scope.department);
+            promises.push(TrainingReports.attendanceLogMatrix.fetch($scope.year, $scope.department));
         } else {
-            reportData = TrainingReports.attendanceLogMatrix.fetch($scope.year);
+            promises.push(TrainingReports.attendanceLogMatrix.fetch($scope.year));
         }
 
-        /*
-        * //This will convert the input from something like this
-        * //["year", "payrollNo", "name", "gender", "position", "department", "location", "Risk Assessment Policy", "traininglogId", "training", "trainingId", "trainingTitle", "personId"];
-        * //to something like this
-        * //[{field: "year"},{field: "payrollNo"},{field: "name"},{field: "gender"},{field: "position"},{field: "location"},{field: "Risk Assessment Policy"},{field: "traininglogId"},{field: "training"},{field: "trainingId"},{field: "trainingTitle"},{field: "personId"}]
-        */
-        columnDefs = _.map(reportData.columns, (value, key) => ({ "field": value }));
-        $scope.reportData = reportData.data;
+        $q.all(promises).then(function (promiseResponses) {
 
-        $scope.attendanceMatrixGridOptions.columnDefs = columnDefs;
-        $scope.attendanceMatrixGridOptions.data = $scope.reportData;
+            reportData = promiseResponses[0];
+            /*
+            * //This will convert the input from something like this
+            * //["year", "payrollNo", "name", "gender", "position", "department", "location", "Risk Assessment Policy", "traininglogId", "training", "trainingId", "trainingTitle", "personId"];
+            * //to something like this
+            * //[{field: "year"},{field: "payrollNo"},{field: "name"},{field: "gender"},{field: "position"},{field: "location"},{field: "Risk Assessment Policy"},{field: "traininglogId"},{field: "training"},{field: "trainingId"},{field: "trainingTitle"},{field: "personId"}]
+            */
+            columnDefs = _.map(reportData.columns, (value, key) => ({ "field": value }));
+
+            $scope.reportData = reportData.data;
+            $scope.attendanceMatrixGridOptions.columnDefs = columnDefs;
+            $scope.attendanceMatrixGridOptions.data = $scope.reportData;
+
+        });
 
     };
 
