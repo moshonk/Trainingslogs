@@ -100,10 +100,12 @@ angular.module('services.utilities', [])
 
         SP.SOD.executeOrDelayUntilScriptLoaded(function () {
             context = SP.ClientContext.get_current();
-            $.getScript(context.get_url() + "/_layouts/15/sp.taxonomy.js", function () {
-                deferred.resolve(context);
-            })
-        }, 'SP.js');
+            // $.getScript(context.get_url() + "/_layouts/15/sp.runtime.js", function () {
+
+            deferred.resolve(context);
+
+            //})
+        }, 'sp.js');
 
         return deferred.promise;
     }
@@ -131,627 +133,595 @@ angular.module('services.utilities', [])
     }
 
     return utilService;
+
 }])
 
-        .factory('TermStoreService', ['$q', '$log', 'UtilService', function ($q, $log, UtilService) {
+.factory('TermStoreService', ['$q', '$log', 'UtilService', function ($q, $log, UtilService) {
 
-            var termStoreService = {};
+    var termStoreService = {};
 
-            const TERM_STORE_NAME = 'UAT Baraza Metadata Service';
+    //const TERM_STORE_NAME = 'UAT Baraza Metadata Service';
 
-            termStoreService.taxonomyConfiguration = {
-                SspId: "",
-                GroupId: "",
-                TermSetId: "",
-                Configuration: "",
-                ParseConfiguration: function () {
+    const TERM_STORE_NAME = 'Baraza Dev Managed Metadata Service';
 
-                    xmlDoc = $.parseXML(this.Configuration);
-                    xml = $(xmlDoc);
+    termStoreService.getTermStore = function (spContext) {
 
-                    var properties = xml.find("Property");
+        var deferred = $q.defer();
 
-                    for (i = 0; i < properties.length; i++) {
+        var taxSession = SP.Taxonomy.TaxonomySession.getTaxonomySession(spContext);
+        //Term Stores
+        var termStores = taxSession.get_termStores();
+        //Term Store under which to create the term.
+        var termStore = termStores.getByName(TERM_STORE_NAME);
 
-                        propertyName = properties[i].firstChild.textContent == undefined ?
-                          properties[i].firstChild.text : properties[i].firstChild.textContent;
-                        propertyValue = properties[i].lastChild.textContent == undefined ?
-                          properties[i].lastChild.text : properties[i].lastChild.textContent;
+        spContext.load(taxSession);
 
-                        if (propertyName == propertyValue) {
-                            propertyValue = "";
-                        }
+        spContext.load(termStore);
 
-                        switch (propertyName) {
-                            case "SspId":
-                                this.SspId = propertyValue;
-                                break;
-                            case "GroupId":
-                                this.GroupId = propertyValue;
-                                break;
-                            case "TermSetId":
-                                this.TermSetId = propertyValue;
-                                break;
-                        }
-                    }
+        spContext.executeQueryAsync(function () {
 
-                }
-            }
+            deferred.resolve(termStore);
 
-            termStoreService.getFieldTaxConfiguration = function (fieldName) {
+        }, function (error) {
 
-                var deferred = $q.deferred
+            deferred.reject(error)
 
-                // Load the client context
-                var clientContext = SP.ClientContext.get_current();
-                if (clientContext != undefined && clientContext != null) {
-                    // Load the root web.
-                    var webSite = clientContext.get_site().get_rootWeb();;
+        });
 
-                    // Select Field from the root web site colins
-                    fieldCollection = webSite.get_fields();
-                    this.field = fieldCollection.getByInternalNameOrTitle(fieldName);
+        return deferred.promise;
 
-                    // Load the field or throw error
-                    clientContext.load(this.fieldCollection);
-                    clientContext.load(this.field);
-                    clientContext.executeQueryAsync(function () {
+    };
 
-                        var fieldInfo = '';
-                        // Get Schema XML from the field
-                        var fieldschema = colorField.get_schemaXml();
-                        // Parse it with the Taxonomy Configuration Object
-                        texconfig = termStoreService.taxonomyFieldConfiguration;
-                        texconfig.Configuration = fieldschema;
-                        texconfig.ParseConfiguration();
+    termStoreService.addTerm = function (termName, termSetId) {
 
-                        deferred.resolve(texconfig);
+        var deferred = $q.defer();
 
-                    }, function (error) {
+        UtilService.waitForScriptsToLoad().then(function (spContext) {
 
-                        deferred.reject(error);
+            termStoreService.getTermStore(spContext).then(function (termStore) {
 
-                    });
+                var newGuid = new SP.Guid.newGuid();
 
-                }
+                var termSet = termStore.getTermSet(termSetId);
 
-                return deferred.promise;
-            }
+                var newTerm = termSet.createTerm(termName, 1033, newGuid.toString());
 
-
-            termStoreService.getTermStore = function (spContext) {
-
-                var deferred = $q.defer();
-
-                var taxSession = SP.Taxonomy.TaxonomySession.getTaxonomySession(spContext);
-                //Term Stores
-                var termStores = taxSession.get_termStores();
-                //Term Store under which to create the term.
-                var termStore = termStores.getByName(TERM_STORE_NAME);
-
-                spContext.load(taxSession);
-
-                spContext.load(termStore);
+                spContext.load(newTerm);
 
                 spContext.executeQueryAsync(function () {
 
-                    deferred.resolve(termStore);
+                    deferred.resolve({ Id: newTerm.get_id().toString(), title: termName });
 
-                }, function (error) {
+                }, function (sender, args) {
 
-                    deferred.reject(error)
-
-                });
-
-                return deferred.promise;
-
-            };
-
-            termStoreService.addTerm = function (termName, termSetId) {
-
-                var deferred = $q.defer();
-
-                UtilService.waitForScriptsToLoad().then(function (spContext) {
-
-                    termStoreService.getTermStore(spContext).then(function (termStore) {
-
-                        var newGuid = new SP.Guid.newGuid();
-
-                        var termSet = termStore.getTermSet(termSetId);
-
-                        var newTerm = termSet.createTerm(termName, 1033, newGuid.toString());
-
-                        spContext.load(newTerm);
-
-                        spContext.executeQueryAsync(function () {
-
-                            deferred.resolve({ Id: newTerm.get_id().toString(), title: termName });
-
-                        }, function (sender, args) {
-
-                            $log.error('Failed: ' + args.get_message());
-                            deferred.reject(args.get_message());
-
-                        });
-
-                    });
+                    $log.error('Failed to add ' + termName + ': ' + args.get_message());
+                    deferred.reject(args.get_message());
 
                 });
 
-                return deferred.promise;
+            });
 
-            };
+        });
 
-            termStoreService.removeTerm = function (termSetId, termId) {
+        return deferred.promise;
 
-                var deferred = $q.defer();
+    };
 
-                UtilService.waitForScriptsToLoad().then(function (spContext) {
+    termStoreService.removeTerm = function (termSetId, termId) {
 
-                    termStoreService.getTermStore(spContext).then(function (termStore) {
+        var deferred = $q.defer();
 
-                        var termSet = termStore.getTermSet(termSetId);
+        UtilService.waitForScriptsToLoad().then(function (spContext) {
 
-                        var term = termSet.getTerm(termId);
+            termStoreService.getTermStore(spContext).then(function (termStore) {
 
-                        term.deleteObject();
+                var termSet = termStore.getTermSet(termSetId);
 
-                        spContext.executeQueryAsync(function () {
+                var term = termSet.getTerm(termId);
 
-                            deferred.resolve("Deleted Successully");
+                term.deleteObject();
 
-                        }, function (sender, args) {
+                spContext.executeQueryAsync(function () {
 
-                            $log.error('Failed: ' + args.get_message());
-                            deferred.reject(args.get_message());
+                    deferred.resolve("Deleted Successully");
 
-                        });
+                }, function (sender, args) {
 
-                    });
+                    $log.error('Failed: ' + args.get_message());
+                    deferred.reject(args.get_message());
+
                 });
 
-                return deferred.promise;
+            });
+        });
 
-            };
+        return deferred.promise;
 
-            termStoreService.loadTerms = function (TermSetGuid) {
-                var deferred = $q.defer();
+    };
 
-                /*
-                /* Retrieve Taxonomy terms using JQuery SPServices.
-                /* Code borrowed from 
-                /* http://sympmarc.com/2013/10/11/spservices-stories-18-retrieve-managed-metadata-using-javascript-and-spservices/
-                */
-                UtilService.waitForScriptsToLoad().then(function (spContext) {
-                    termStoreService.getTermStore(spContext).then(function (termStore) {
-                        $().SPServices({
-                            operation: "GetChildTermsInTermSet",
-                            sspId: termStore.get_id().toString(),
-                            termSetId: TermSetGuid,
-                            lcid: 1033,
-                            completefunc: function (xData, Status) {
-                                if (Status == "success") {
+    termStoreService.loadTerms = function (TermSetGuid) {
+        var deferred = $q.defer();
 
-                                    terms = new Array();
+        /*
+        /* Retrieve Taxonomy terms using JQuery SPServices.
+        /* Code borrowed from 
+        /* http://sympmarc.com/2013/10/11/spservices-stories-18-retrieve-managed-metadata-using-javascript-and-spservices/
+        */
+        UtilService.waitForScriptsToLoad().then(function (spContext) {
+            termStoreService.getTermStore(spContext).then(function (termStore) {
+                $().SPServices({
+                    operation: "GetChildTermsInTermSet",
+                    sspId: termStore.get_id().toString(),
+                    termSetId: TermSetGuid,
+                    lcid: 1033,
+                    completefunc: function (xData, Status) {
+                        if (Status == "success") {
 
-                                    xmlData = xData;
+                            terms = new Array();
 
-                                    // Fix for different XML parsing in IE and Chrome
-                                    termsContent = $.parseXML(xmlData.responseText).firstChild.textContent == undefined ?
-                                      $.parseXML(xmlData.responseText).text :
-                                      $.parseXML(xmlData.responseText).firstChild.textContent;
+                            xmlData = xData;
 
-                                    termsXML = $.parseXML(termsContent);
-                                    $termsXML = $(termsXML);
+                            // Fix for different XML parsing in IE and Chrome
+                            termsContent = $.parseXML(xmlData.responseText).firstChild.textContent == undefined ?
+                                $.parseXML(xmlData.responseText).text :
+                                $.parseXML(xmlData.responseText).firstChild.textContent;
 
-                                    childTerms = $termsXML.find("T");
-                                    parentTermId = null;
+                            termsXML = $.parseXML(termsContent);
+                            $termsXML = $(termsXML);
 
-                                    for (i = 0; i < childTerms.length; i++) {
+                            childTerms = $termsXML.find("T");
+                            parentTermId = null;
 
-                                        var tsTerm = {};
+                            for (i = 0; i < childTerms.length; i++) {
 
-                                        termName = $(childTerms[i]).find("TL");
+                                var tsTerm = {};
 
-                                        // Requesting actual term id
-                                        tsTerm.ID = $(childTerms[i]).attr("a9");
+                                termName = $(childTerms[i]).find("TL");
 
-                                        // Requesting term name
-                                        tsTerm.Name = termName.attr("a32");
+                                // Requesting actual term id
+                                tsTerm.ID = $(childTerms[i]).attr("a9");
 
-                                        terms[i] = tsTerm;
+                                // Requesting term name
+                                tsTerm.Name = termName.attr("a32");
 
-                                    }
-
-                                    deferred.resolve(terms);
-
-                                } else {
-
-                                    deferred.reject("Error. Unable to fetch terms");
-
-                                }
+                                terms[i] = tsTerm;
 
                             }
-                        });
 
-                    });
+                            deferred.resolve(terms);
 
-                });
+                        } else {
 
-                return deferred.promise;
-            };
+                            deferred.reject("Error. Unable to fetch terms");
 
-            return termStoreService;
-
-        }])
-
-        .factory('ShptRestService', ['$q', '$http', '$log', 'UtilService', function ($q, $http, $log, UtilService) {
-
-            var shptService = {};
-
-            shptService.appWebUrl = decodeURIComponent(UtilService.getQueryStringParameter('SPAppWebUrl')).split('#')[0];
-            shptService.hostWebUrl = decodeURIComponent(UtilService.getQueryStringParameter('SPHostUrl')).split('#')[0];
-
-            shptService.getListItems = function (listTitle, queryParams) {
-                return $http({
-                    method: 'GET',
-                    url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')/Items?' + queryParams + '&@target=\'' + shptService.hostWebUrl + '\'',
-                    headers: { Accept: 'application/json;odata=verbose' }
-                }).then(function sendResponseData(response) {
-                    return response.data.d;
-                }).catch(function handleError(response) {
-                    $log.error(response);
-                    $log.error('http request error: ' + response.data.error.message.value);
-                    return $q.reject(response);
-                });
-            };
-
-            /*
-            * Concept borrowed from 
-            * http://www.c-sharpcorner.com/UploadFile/Vipul.Kelkar/properly-retrieve-single-select-managed-metadata-field-using/
-            */
-            shptService.getListItemsWithCaml = function (listTitle, queryParams) {
-                var deferred = $q.defer();
-                shptService.retrieveFormDigest().then(function (formDigestValue) {
-
-                    $http({
-                        method: 'POST',
-                        url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')/GetItems(query=@qry)?@qry={\'ViewXml\':\'' + queryParams + '\'}&@target=\'' + shptService.hostWebUrl + '\'',
-                        headers: {
-                            "Accept": 'application/json;odata=verbose',
-                            "Content-Length": 0,
-                            "X-RequestDigest": formDigestValue,
                         }
 
-                    }).then(function sendResponseData(response) {
-                        deferred.resolve(response.data.d);
-                    }).catch(function handleError(response) {
-                        $log.error('http request error: ' + response.data.error.message.value);
-                        deferred.reject(response);
-                    });
-
+                    }
                 });
 
-                return deferred.promise;
+            });
 
-            };
+        });
 
-            shptService.getListProperties = function (listTitle, queryParams) {
-                var deferred = $q.defer();
-                $http({
-                    method: 'GET',
-                    url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')?' + queryParams + '&@target=\'' + shptService.hostWebUrl + '\'',
-                    headers: { Accept: 'application/json;odata=verbose' }
-                }).then(function sendResponseData(response) {
-                    deferred.resolve(response.data.d);
-                }).catch(function handleError(response) {
-                    var errMessage = "Error retrieving list properties for " + listTitle + ". "
-                                        + response.data.error.message.value + "";
-                    deferred.reject('Error: ' + response.status + '. ' + errMessage);
-                });
+        return deferred.promise;
+    };
 
-                return deferred.promise;
-            };
+    return termStoreService;
 
-            shptService.getListFields = function (listTitle, queryParams) {
-                var deferred = $q.defer();
+}])
 
-                $http({
-                    method: 'GET',
-                    url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')/fields?' + queryParams + '&@target=\'' + shptService.hostWebUrl + '\'',
-                    headers: { 'Accept': 'application/json;odata=verbose' }
-                }).then(function sendResponseData(response) {
-                    deferred.resolve(response.data.d);
-                }).catch(function handleError(response) {
-                    var errMessage = "Error retrieving list fields for " + listTitle + ". "
-                                        + response.data.error.message.value + "";
-                    deferred.reject('Error: ' + response.status + '. ' + errMessage);
-                });
+.factory('ShptRestService', ['$q', '$http', '$log', 'UtilService', function ($q, $http, $log, UtilService) {
 
-                return deferred.promise;
-            };
+    var shptService = {};
 
-            shptService.getListFieldById = function (listTitle, listFieldId) {
-                var deferred = $q.defer();
+    shptService.appWebUrl = decodeURIComponent(UtilService.getQueryStringParameter('SPAppWebUrl')).split('#')[0];
+    shptService.hostWebUrl = decodeURIComponent(UtilService.getQueryStringParameter('SPHostUrl')).split('#')[0];
 
-                $http({
-                    method: 'GET',
-                    url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')/fields(guid\'' + listFieldId + '\')?@target=\'' + shptService.hostWebUrl + '\'',
-                    headers: { 'Accept': 'application/json;odata=verbose' }
-                }).then(function sendResponseData(response) {
-                    deferred.resolve(response.data.d);
-                }).catch(function handleError(response) {
-                    $log.error(response);
-                    var errMessage = "Error retrieving list fields for " + listTitle + ". "
-                                        + response.data.error.message.value + "";
-                    deferred.reject('Error: ' + response.status + '. ' + errMessage);
-                });
+    shptService.getListItems = function (listTitle, queryParams) {
+        return $http({
+            method: 'GET',
+            url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')/Items?' + queryParams + '&@target=\'' + shptService.hostWebUrl + '\'',
+            headers: { Accept: 'application/json;odata=verbose' }
+        }).then(function sendResponseData(response) {
+            return response.data.d;
+        }).catch(function handleError(response) {
+            $log.error(response);
+            $log.error('http request error: ' + response.data.error.message.value);
+            return $q.reject(response);
+        });
+    };
 
-                return deferred.promise;
-            };
+    /*
+    * Concept borrowed from 
+    * http://www.c-sharpcorner.com/UploadFile/Vipul.Kelkar/properly-retrieve-single-select-managed-metadata-field-using/
+    */
+    shptService.getListItemsWithCaml = function (listTitle, queryParams) {
+        var deferred = $q.defer();
+        shptService.retrieveFormDigest().then(function (formDigestValue) {
 
+            $http({
+                method: 'POST',
+                url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')/GetItems(query=@qry)?@qry={\'ViewXml\':\'' + queryParams + '\'}&@target=\'' + shptService.hostWebUrl + '\'',
+                headers: {
+                    "Accept": 'application/json;odata=verbose',
+                    "Content-Length": 0,
+                    "X-RequestDigest": formDigestValue,
+                }
 
-            shptService.getItemTypeForListName = function (listTitle) {
-                var deferred = $q.defer();
+            }).then(function sendResponseData(response) {
+                deferred.resolve(response.data.d);
+            }).catch(function handleError(response) {
+                $log.error('http request error: ' + response.data.error.message.value);
+                deferred.reject(response);
+            });
 
-                shptService.getListProperties(listTitle, '$select=ListItemEntityTypeFullName').then(function (data) {
-                    deferred.resolve(data.ListItemEntityTypeFullName);
-                }).catch(function (response) {
-                    $log.error(response);
-                    deferred.reject(response);
-                });
+        });
 
-                return deferred.promise;
-            };
+        return deferred.promise;
 
-            shptService.retrieveFormDigest = function () {
-                var contextInfoUri = shptService.appWebUrl + '/_api/contextinfo?$select=FormDigestValue';
-                var deferred = $q.defer();
+    };
 
-                $http({
-                    url: contextInfoUri,
-                    method: "POST",
-                    headers: { "Accept": "application/json; odata=verbose" }
-                }).then(function (response) {
-                    formDigestValue = response.data.d.GetContextWebInformation.FormDigestValue;
-                    deferred.resolve(formDigestValue);
-                }).catch(function (response) {
-                    var errMsg = "Error retrieving the form digest value: "
-                                + response.data.error.message.value;
-                    $log.error(errMsg);
-                    deferred.reject('Error: ' + response.status + '. ' + errMsg);
-                });
+    shptService.getListProperties = function (listTitle, queryParams) {
+        var deferred = $q.defer();
+        $http({
+            method: 'GET',
+            url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')?' + queryParams + '&@target=\'' + shptService.hostWebUrl + '\'',
+            headers: { Accept: 'application/json;odata=verbose' }
+        }).then(function sendResponseData(response) {
+            deferred.resolve(response.data.d);
+        }).catch(function handleError(response) {
+            var errMessage = "Error retrieving list properties for " + listTitle + ". "
+                                + response.data.error.message.value + "";
+            deferred.reject('Error: ' + response.status + '. ' + errMessage);
+        });
 
-                return deferred.promise;
-            }
+        return deferred.promise;
+    };
 
-            shptService.retrieveETagValue = function (operationUri) {
-                var deferred = $q.defer();
+    shptService.getListFields = function (listTitle, queryParams) {
+        var deferred = $q.defer();
 
+        $http({
+            method: 'GET',
+            url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')/fields?' + queryParams + '&@target=\'' + shptService.hostWebUrl + '\'',
+            headers: { 'Accept': 'application/json;odata=verbose' }
+        }).then(function sendResponseData(response) {
+            deferred.resolve(response.data.d);
+        }).catch(function handleError(response) {
+            var errMessage = "Error retrieving list fields for " + listTitle + ". "
+                                + response.data.error.message.value + "";
+            deferred.reject('Error: ' + response.status + '. ' + errMessage);
+        });
+
+        return deferred.promise;
+    };
+
+    shptService.getListFieldById = function (listTitle, listFieldId) {
+        var deferred = $q.defer();
+
+        $http({
+            method: 'GET',
+            url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')/fields(guid\'' + listFieldId + '\')?@target=\'' + shptService.hostWebUrl + '\'',
+            headers: { 'Accept': 'application/json;odata=verbose' }
+        }).then(function sendResponseData(response) {
+            deferred.resolve(response.data.d);
+        }).catch(function handleError(response) {
+            $log.error(response);
+            var errMessage = "Error retrieving list fields for " + listTitle + ". "
+                                + response.data.error.message.value + "";
+            deferred.reject('Error: ' + response.status + '. ' + errMessage);
+        });
+
+        return deferred.promise;
+    };
+
+    shptService.getItemTypeForListName = function (listTitle) {
+        var deferred = $q.defer();
+
+        shptService.getListProperties(listTitle, '$select=ListItemEntityTypeFullName').then(function (data) {
+            deferred.resolve(data.ListItemEntityTypeFullName);
+        }).catch(function (response) {
+            $log.error(response);
+            deferred.reject(response);
+        });
+
+        return deferred.promise;
+    };
+
+    shptService.retrieveFormDigest = function () {
+        var contextInfoUri = shptService.appWebUrl + '/_api/contextinfo?$select=FormDigestValue';
+        var deferred = $q.defer();
+
+        $http({
+            url: contextInfoUri,
+            method: "POST",
+            headers: { "Accept": "application/json; odata=verbose" }
+        }).then(function (response) {
+            formDigestValue = response.data.d.GetContextWebInformation.FormDigestValue;
+            deferred.resolve(formDigestValue);
+        }).catch(function (response) {
+            var errMsg = "Error retrieving the form digest value: "
+                        + response.data.error.message.value;
+            $log.error(errMsg);
+            deferred.reject('Error: ' + response.status + '. ' + errMsg);
+        });
+
+        return deferred.promise;
+    }
+
+    shptService.retrieveETagValue = function (operationUri) {
+        var deferred = $q.defer();
+
+        $http({
+            url: operationUri,
+            method: "GET",
+            headers: { "Accept": "application/json; odata=verbose" }
+        }).then(function (response) {
+            eTag = response.data.d.__metadata["etag"];
+            deferred.resolve(eTag);
+        }).catch(function (response) {
+            $log.error(response);
+            var errMsg = "Error retrieving ETag value: "
+                        + response.data.error.message.value;
+            $log.error(errMsg);
+            deferred.reject('Error: ' + response.status + '. ' + errMsg);
+        });
+
+        return deferred.promise;
+    };
+
+    shptService.getListItemEntityTypeFullName = function (listName) {
+        var deferred = $q.defer();
+        shptService.getListProperties(listName, '$select=ListItemEntityTypeFullName').then(function (response) {
+            deferred.resolve(response.ListItemEntityTypeFullName);
+        });
+
+        return deferred.promise;
+    };
+
+    shptService.createNewListItem = function (listTitle, bodyContent) {
+        var operationUri, deferred, itemTypeForListName;
+        var promises = [];
+
+        promises.push(shptService.retrieveFormDigest());
+        promises.push(shptService.getItemTypeForListName(listTitle));
+        deferred = $q.defer();
+
+        $q.all(promises).then(function (promiseResults) {
+
+            formDigestValue = promiseResults[0];
+            itemTypeForListName = promiseResults[1];
+            operationUri = shptService.appWebUrl + "/_api/SP.AppContextSite(@target)/web/Lists/getByTitle('" + listTitle + "')/Items"
+                            + '?@target=\'' + shptService.hostWebUrl + '\'';
+            bodyContent.__metadata = { 'type': itemTypeForListName };
+
+            $http({
+                url: operationUri,
+                method: "POST",
+                headers: {
+                    "Accept": "application/json;odata=verbose",
+                    "Content-Type": "application/json;odata=verbose",
+                    "Content-Length": bodyContent.length,
+                    "X-RequestDigest": formDigestValue
+                },
+                data: JSON.stringify(bodyContent)
+            }).then(function (response) {
+                deferred.resolve(response.data.d);
+            }).catch(function (response) {
+                var errMessage = "Error adding List Item '"
+                    + response.data.error.message.value + "'";
+                $log.error(errMessage)
+                deferred.reject('Error: ' + response.status + '. ' + errMessage);
+            });
+
+        });
+
+        return deferred.promise;
+    }
+
+    shptService.updateListItem = function (listTitle, itemId, bodyContent) {
+        var operationUri, deferred, itemTypeForListName;
+        var promises = [];
+
+        deferred = $q.defer();
+        operationUri = shptService.appWebUrl +
+            "/_api/SP.AppContextSite(@target)/web/lists/GetByTitle('" + listTitle + "')/Items(" + itemId + ")" + '?@target=\'' + shptService.hostWebUrl + '\'';
+
+        promises.push(shptService.retrieveFormDigest());
+        promises.push(shptService.getItemTypeForListName(listTitle));
+        promises.push(shptService.retrieveETagValue(operationUri));
+
+        $q.all(promises).then(function (promiseResults) {
+
+            formDigestValue = promiseResults[0];
+            itemTypeForListName = promiseResults[1];
+            eTag = promiseResults[2];
+
+            bodyContent.__metadata = { 'type': itemTypeForListName };
+
+            $http({
+                url: operationUri,
+                method: "POST",
+                headers: {
+                    "Accept": "application/json;odata=verbose",
+                    "content-type": "application/json;odata=verbose",
+                    "content-length": bodyContent.length,
+                    "X-RequestDigest": formDigestValue,
+                    "X-HTTP-Method": "MERGE",
+                    "IF-MATCH": eTag
+                },
+                data: bodyContent
+            }).then(function (response) {
+                deferred.resolve('Response Status: ' + response.status);
+
+            }).catch(function (response, errorCode, errorMessage) {
+
+                var errMsg = "Error updating list item: " + response.data.error.message.value;
+
+                $log.error(errMsg);
+
+                deferred.reject('Error: ' + response.status + '. ' + errMsg);
+            });
+
+        });
+
+        return deferred.promise;
+
+    }
+
+    shptService.deleteListItem = function (listTitle, itemId, bodyContent) {
+        var operationUri = shptService.appWebUrl + "/_api/SP.AppContextSite(@target)/web/lists/GetByTitle('" + listTitle + "')/Items(" + itemId + ")" + '?@target=\'' + shptService.hostWebUrl + '\'';;
+        var deferred = $q.defer();
+
+        shptService.retrieveFormDigest().then(function (formDigestValue) {
+            shptService.retrieveETagValue(operationUri).then(function (eTag) {
                 $http({
                     url: operationUri,
-                    method: "GET",
-                    headers: { "Accept": "application/json; odata=verbose" }
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json;odata=verbose",
+                        "content-type": "application/json;odata=verbose",
+                        "X-RequestDigest": formDigestValue,
+                        "X-HTTP-Method": "DELETE",
+                        "IF-MATCH": eTag
+                    }
                 }).then(function (response) {
-                    eTag = response.data.d.__metadata["etag"];
-                    deferred.resolve(eTag);
+                    $log.info('Deleted successfully');
+                    deferred.resolve(response);
                 }).catch(function (response) {
-                    $log.error(response);
-                    var errMsg = "Error retrieving ETag value: "
-                                + response.data.error.message.value;
-                    $log.error(errMsg);
-                    deferred.reject('Error: ' + response.status + '. ' + errMsg);
+                    var errMessage = "Error deleting item: '";
+                    +response.data.error.message.value + "'";
+                    deferred.reject('Error: ' + errMessage);
                 });
+            }).catch(function (error) {
 
-                return deferred.promise;
-            };
+                deferred.reject(error);
 
-            shptService.getListItemEntityTypeFullName = function (listName) {
-                var deferred = $q.defer();
-                shptService.getListProperties(listName, '$select=ListItemEntityTypeFullName').then(function (response) {
-                    deferred.resolve(response.ListItemEntityTypeFullName);
-                });
+            });
+        });
 
-                return deferred.promise;
-            };
+        return deferred.promise;
+    }
 
-            shptService.createNewListItem = function (listTitle, bodyContent) {
-                var operationUri, deferred, itemTypeForListName;
-                var promises = [];
+    /**
+    * This function adds a user to this site collection if they don't exist
+    * @param {string} a logon name of the user in the format 'i:0#.f|membership|kochieng@kwtrp.org' or 'kwtrp\kochieng' 
+    * @returns {object} user object
+    */
+    shptService.ensureUser = function (loginName) {
+        var deferred = $q.defer();
+        var payload = { 'logonName': loginName };
 
-                promises.push(shptService.retrieveFormDigest());
-                promises.push(shptService.getItemTypeForListName(listTitle));
-                deferred = $q.defer();
+        shptService.retrieveFormDigest().then(function (formDigestValue) {
 
-                $q.all(promises).then(function (promiseResults) {
+            $http({
+                method: 'POST',
+                url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/ensureuser?@target=\'' + shptService.hostWebUrl + '\'',
+                data: JSON.stringify(payload),
+                headers: {
+                    "Accept": "application/json;odata=verbose",
+                    "content-type": "application/json;odata=verbose",
+                    "X-RequestDigest": formDigestValue
+                }
+            }).then(function sendResponseData(response) {
+                deferred.resolve(response.data.d);
+            }).catch(function handleError(response) {
+                var errMessage = "Uanble to add user. "
+                                    + response.data.error.message.value;
+                $log.error(errMessage);
+                deferred.reject('Error: ' + response.status + '. ' + errMessage);
+            });
 
-                    formDigestValue = promiseResults[0];
-                    itemTypeForListName = promiseResults[1];
-                    operationUri = shptService.appWebUrl + "/_api/SP.AppContextSite(@target)/web/Lists/getByTitle('" + listTitle + "')/Items"
-                                    + '?@target=\'' + shptService.hostWebUrl + '\'';
-                    bodyContent.__metadata = { 'type': itemTypeForListName };
+        });
 
-                    $http({
-                        url: operationUri,
-                        method: "POST",
-                        headers: {
-                            "Accept": "application/json;odata=verbose",
-                            "Content-Type": "application/json;odata=verbose",
-                            "Content-Length": bodyContent.length,
-                            "X-RequestDigest": formDigestValue
-                        },
-                        data: JSON.stringify(bodyContent)
-                    }).then(function (response) {
-                        deferred.resolve(response.data.d);
-                    }).catch(function (response) {
-                        var errMessage = "Error adding List Item '"
-                            + response.data.error.message.value + "'";
-                        $log.error(errMessage)
-                        deferred.reject('Error: ' + response.status + '. ' + errMessage);
-                    });
+        return deferred.promise;
+    }
 
-                });
+    /*
+    * Get the hidden internal field name for a Multi-value taxonomy field
+    * @param {string} listname - The name of the list in which the field resides 
+    * @param {string} multivalueTaxonomyfieldName - Multi-value taxonomy field internal name
+    * @returns {string} The hidden internal field name for the malti-value taxonomy field 
+    */
+    shptService.getMultiValueTaxonomyHiddenNoteFieldName = function (listName, multivalueTaxonomyfieldName) {
+        var deferred = $q.defer();
 
-                return deferred.promise;
+        /*
+        * To update a multi-value taxonomy field via REST api, check out this link
+        * http://www.jrjlee.com/2017/01/getting-or-setting-multi-value-metadata.html
+        * http://www.aerieconsulting.com/blog/update-using-rest-to-update-a-multi-value-taxonomy-field-in-sharepoint
+        */
+        shptService.getListFields(listName, '$select=TextField&$filter=InternalName eq \'' + multivalueTaxonomyfieldName + '\'').then(function (response) {
+
+            var hiddenNoteFieldId = response.results[0].TextField;
+
+            shptService.getListFieldById(listName, hiddenNoteFieldId).then(function (response) {
+
+                var hiddenNoteFieldName = response.InternalName;
+
+                deferred.resolve(hiddenNoteFieldName);
+
+            }).catch(function (error) {
+
+                deferred.reject(error);
+
+            });
+
+        }).catch(function (error) {
+
+            deferred.reject(error);
+
+        });;
+
+        return deferred.promise;
+
+    };
+
+    shptService.getListUserEffectivePermissions = function (listTitle) {
+
+        var deferred = $q.defer();
+
+        $http({
+            method: 'GET',
+            url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/Lists/getByTitle(\'' + listTitle + '\')/EffectiveBasePermissions' + '?@target=\'' + shptService.hostWebUrl + '\'',
+            headers: { Accept: 'application/json;odata=verbose' }
+        }).then(function sendResponseData(response) {
+
+            var permissions = new SP.BasePermissions();
+
+            permissions.initPropertiesFromJson(response.data.d.EffectiveBasePermissions);
+
+            var permLevels = [];
+
+            for (var permLevelName in SP.PermissionKind.prototype) {
+                if (SP.PermissionKind.hasOwnProperty(permLevelName)) {
+                    var permLevel = SP.PermissionKind.parse(permLevelName);
+                    if (permissions.has(permLevel)) {
+                        permLevels.push(permLevelName);
+                    }
+                }
             }
 
-            shptService.updateListItem = function (listTitle, itemId, bodyContent) {
-                var operationUri, deferred, itemTypeForListName;
-                var promises = [];
+            var permissions = {};
 
-                deferred = $q.defer();
-                operationUri = shptService.appWebUrl +
-                    "/_api/SP.AppContextSite(@target)/web/lists/GetByTitle('" + listTitle + "')/Items(" + itemId + ")" + '?@target=\'' + shptService.hostWebUrl + '\'';
+            permissions.canDelete = permLevels.indexOf('deleteListItems') > -1;
 
-                promises.push(shptService.retrieveFormDigest());
-                promises.push(shptService.getItemTypeForListName(listTitle));
-                promises.push(shptService.retrieveETagValue(operationUri));
+            permissions.canEdit = permLevels.indexOf('editListItems') > -1;
 
-                $q.all(promises).then(function (promiseResults) {
+            permissions.canAdd = permLevels.indexOf('addListItems') > -1;
 
-                    formDigestValue = promiseResults[0];
-                    itemTypeForListName = promiseResults[1];
-                    eTag = promiseResults[2];
+            deferred.resolve(permissions);
 
-                    bodyContent.__metadata = { 'type': itemTypeForListName };
+        }).catch(function handleError(response) {
+            $log.error(response);
+            var errMessage = "Error retrieving list permissions for " + listTitle + ". "
+                                + response.data + "";
+            deferred.reject('Error: ' + response.status + '. ' + errMessage);
+        });
 
-                    $http({
-                        url: operationUri,
-                        method: "POST",
-                        headers: {
-                            "Accept": "application/json;odata=verbose",
-                            "content-type": "application/json;odata=verbose",
-                            "content-length": bodyContent.length,
-                            "X-RequestDigest": formDigestValue,
-                            "X-HTTP-Method": "MERGE",
-                            "IF-MATCH": eTag
-                        },
-                        data: bodyContent
-                    }).then(function (response) {
-                        deferred.resolve('Response Status: ' + response.status);
+        return deferred.promise;
 
-                    }).catch(function (response, errorCode, errorMessage) {
+    };
 
-                        var errMsg = "Error updating list item: " + response.data.error.message.value;
-
-                        $log.error(errMsg);
-
-                        deferred.reject('Error: ' + response.status + '. ' + errMsg);
-                    });
-
-                });
-
-                return deferred.promise;
-
-            }
-
-            shptService.deleteListItem = function (listTitle, itemId, bodyContent) {
-                var operationUri = shptService.appWebUrl + "/_api/SP.AppContextSite(@target)/web/lists/GetByTitle('" + listTitle + "')/Items(" + itemId + ")" + '?@target=\'' + shptService.hostWebUrl + '\'';;
-                var deferred = $q.defer();
-
-                shptService.retrieveFormDigest().then(function (formDigestValue) {
-                    shptService.retrieveETagValue(operationUri).then(function (eTag) {
-                        $http({
-                            url: operationUri,
-                            method: "POST",
-                            headers: {
-                                "Accept": "application/json;odata=verbose",
-                                "content-type": "application/json;odata=verbose",
-                                "X-RequestDigest": formDigestValue,
-                                "X-HTTP-Method": "DELETE",
-                                "IF-MATCH": eTag
-                            }
-                        }).then(function (response) {
-                            $log.info('Deleted successfully');
-                            deferred.resolve(response);
-                        }).catch(function (response) {
-                            var errMessage = "Error deleting item: '";
-                            +response.data.error.message.value + "'";
-                            deferred.reject('Error: ' + errMessage);
-                        });
-                    }).catch(function (error) {
-
-                        deferred.reject(error);
-
-                    });
-                });
-
-                return deferred.promise;
-            }
-
-            /**
-            * This function adds a user to this site collection if they don't exist
-            * @param {string} a logon name of the user in the format 'i:0#.f|membership|kochieng@kwtrp.org' or 'kwtrp\kochieng' 
-            * @returns {object} user object
-            */
-            shptService.ensureUser = function (loginName) {
-                var deferred = $q.defer();
-                var payload = { 'logonName': loginName };
-
-                shptService.retrieveFormDigest().then(function (formDigestValue) {
-
-                    $http({
-                        method: 'POST',
-                        url: shptService.appWebUrl + '/_api/SP.AppContextSite(@target)/web/ensureuser?@target=\'' + shptService.hostWebUrl + '\'',
-                        data: JSON.stringify(payload),
-                        headers: {
-                            "Accept": "application/json;odata=verbose",
-                            "content-type": "application/json;odata=verbose",
-                            "X-RequestDigest": formDigestValue
-                        }
-                    }).then(function sendResponseData(response) {
-                        deferred.resolve(response.data.d);
-                    }).catch(function handleError(response) {
-                        var errMessage = "Uanble to add user. "
-                                            + response.data.error.message.value;
-                        $log.error(errMessage);
-                        deferred.reject('Error: ' + response.status + '. ' + errMessage);
-                    });
-
-                });
-
-                return deferred.promise;
-            }
-
-            /*
-            * Get the hidden internal field name for a Multi-value taxonomy field
-            * @param {string} listname - The name of the list in which the field resides 
-            * @param {string} multivalueTaxonomyfieldName - Multi-value taxonomy field internal name
-            * @returns {string} The hidden internal field name for the malti-value taxonomy field 
-            */
-            shptService.getMultiValueTaxonomyHiddenNoteFieldName = function (listName, multivalueTaxonomyfieldName) {
-                var deferred = $q.defer();
-
-                /*
-                * To update a multi-value taxonomy field via REST api, check out this link
-                * http://www.jrjlee.com/2017/01/getting-or-setting-multi-value-metadata.html
-                * http://www.aerieconsulting.com/blog/update-using-rest-to-update-a-multi-value-taxonomy-field-in-sharepoint
-                */
-                shptService.getListFields(listName, '$select=TextField&$filter=InternalName eq \'' + multivalueTaxonomyfieldName + '\'').then(function (response) {
-
-                    var hiddenNoteFieldId = response.results[0].TextField;
-
-                    shptService.getListFieldById(listName, hiddenNoteFieldId).then(function (response) {
-
-                        var hiddenNoteFieldName = response.InternalName;
-
-                        deferred.resolve(hiddenNoteFieldName);
-
-                    }).catch(function (error) {
-
-                        deferred.reject(error);
-
-                    });
-
-                }).catch(function (error) {
-
-                    deferred.reject(error);
-
-                });;
-
-                return deferred.promise;
-
-            };
-
-            return shptService;
-        }]);
+    return shptService;
+}]);

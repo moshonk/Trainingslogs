@@ -3,14 +3,15 @@
 <!--Font Awesome (added because you use icons in your prepend/append)-->
 <link rel="stylesheet" href="https://formden.com/static/cdn/font-awesome/4.4.0/css/font-awesome.min.css" />
 <!-- Inline CSS based on choices in "Settings" tab -->
-
 <!-- HTML Form (wrapped in a .bootstrap-iso div) -->
 <div class="bootstrap-iso" ng-controller="traininglogsCtrl as traininglogCtrl">
     <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>
-                    Add a Training log
+                    <span ng-show="!traininglog.id">Add</span>
+                    <span ng-show="traininglog.id">Edit</span>
+                    a Training log
                 </h2>
             </div>
             <form method="post" name="frm" novalidate>

@@ -22,8 +22,6 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
 
         var deferred = $q.defer();
 
-
-
         reportData = [];
 
         TrainingLogs.fetchAll().then(function (traininglogs) {
@@ -53,8 +51,7 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
                 });
 
             });
-            //alert('as')
-            //console.log(reportData)
+
             deferred.resolve(reportData);
 
         });
@@ -312,12 +309,17 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
         var promises = [];
 
         promises.push(TrainingReports.uniqueTrainings(year));
+
         promises.push(TrainingReports.reportRecords.fetchAll());
 
         if (angular.isUndefined(department)) {
+
             promises.push(People.fetchAll());
+
         } else {
+
             promises.push(People.fetchByDepartment(department));
+
         }
 
         $q.all(promises).then(function (promiseResults) {
@@ -382,6 +384,7 @@ angular.module('resources.trainingreports', ['resources.traininglogs', 'resource
                 attendanceLogMatrix.push(attendanceRecord);
 
             });
+
             deferred.resolve({ data: attendanceLogMatrix, columns: columns });
 
         });

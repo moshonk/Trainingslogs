@@ -53,5 +53,10 @@
     <ProjectItemFile Source="src\app\traininglogs\positions\positions.js" Target="src\app\traininglogs\positions\" Type="ElementFile" />
     <ProjectItemFile Source="src\common\directives\ngHttpLoader\angular-http-loader.min.js" Target="src\common\directives\ngHttpLoader\" Type="ElementFile" />
     <ProjectItemFile Source="src\common\directives\ngHttpLoader\loader.tpl.html" Target="src\common\directives\ngHttpLoader\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\directives\angular-js-xlsx\xlsx.core.min.js" Target="src\common\directives\angular-js-xlsx\" Type="ElementFile" />
+    <ProjectItemFile Source="src\common\directives\angular-js-xlsx\angular-js-xlsx.js" Target="src\common\directives\angular-js-xlsx\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\people\people-importer.tpl.html" Target="src\app\traininglogs\people\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\peopleImporter\people-importer.tpl.html" Target="src\app\traininglogs\peopleImporter\" Type="ElementFile" />
+    <ProjectItemFile Source="src\app\traininglogs\peopleImporter\people.js" Target="src\app\traininglogs\peopleImporter\" Type="ElementFile" />
   </Files>
 </ProjectItem>

@@ -6,6 +6,8 @@ angular.module('resources.attendances', ['resources.people', 'services.utilities
 
     var AttendanceList = null;
 
+    const ATTENDANCES_LIST_NAME = 'Trainingattendances';
+
     /*
     *Get all training attendances
     *@returns {array} person - Array of training attendances
@@ -22,7 +24,7 @@ angular.module('resources.attendances', ['resources.people', 'services.utilities
 
             var promises = [];
 
-            promises.push(ShptRestService.getListItems('Trainingattendances', queryParams));
+            promises.push(ShptRestService.getListItems(ATTENDANCES_LIST_NAME, queryParams));
 
             promises.push(People.fetchAll());
 
@@ -196,6 +198,16 @@ angular.module('resources.attendances', ['resources.people', 'services.utilities
         });
 
         return deferred.promise;
+
+    };
+
+    /*
+    * Get list permissions for current user
+    * @returns {promise<object>}  Returns a permissions object wrapped inside a promise
+    */
+    Attendances.getListPermissions = function () {
+
+        return ShptRestService.getListUserEffectivePermissions(ATTENDANCES_LIST_NAME);
 
     };
 

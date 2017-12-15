@@ -16,8 +16,9 @@
 
     <SharePoint:ScriptLink Name="sp.runtime.js" runat="server" OnDemand="true" LoadAfterUI="true" Localizable="false" />
     <SharePoint:ScriptLink Name="sp.js" runat="server" OnDemand="true" LoadAfterUI="true" Localizable="false" />
-    <script type="text/javascript" src="/_layouts/15/SP.RequestExecutor.js"></script>
-    <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/sp.runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/sp.js"></script>
+    <script type="text/javascript" src="/_layouts/15/sp.requestexecutor.js"></script>
     <script type="text/javascript" src="/_layouts/15/sp.taxonomy.js"></script>
 
     <meta name="WebPartPageExpansion" content="full" />
@@ -30,6 +31,7 @@
     <link rel="stylesheet" href="common/directives/mfb/mfb.min.css" />
     <link rel="stylesheet" href="common/directives/am.multiselect/multiselect.css" />
     <link href="common/directives/peoplepicker/sp-peoplepicker.min.css" rel="stylesheet" />
+    <link href="//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.9.0/loading-bar.min.css" rel="stylesheet" />
 
     <link rel="stylesheet" href="css/style.css" />
 
@@ -47,15 +49,16 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.5.0/ui-bootstrap-tpls.min.js"></script>
     <script type="text/javascript" charset="utf-8" src="https://ghiden.github.io/angucomplete-alt/js/libs/angucomplete-alt.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.SPServices/2014.02/jquery.SPServices.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.9.0/loading-bar.min.js"></script>
 
     <script type="text/javascript" src="../vendor/angular-ui/bootstrap/ui-bootstrap-dialogs.js"></script>
 
-    <script type="text/javascript" src="common/directives/ngHttpLoader/angular-http-loader.min.js"></script>
-    <script type="text/javascript" src="common/directives/am.multiselect/am.multiselect.js"></script>
-    <script type="text/javascript" src="common/directives/mfb/mfb-directive.js"></script>
-    <script type="text/javascript" src="common/directives/pagination/dirPagination.js"></script>
-    <script type="text/javascript" src="common/directives/peoplepicker/sp-peoplepicker.js"></script>
-    <!-- Source https://github.com/jasonvenema/sharepoint-angular-peoplepicker -->
+    <script type="text/javascript" src="common/directives/am.multiselect/am.multiselect.js"></script> <!-- Source: https://github.com/amitava82/angular-multiselect -->
+    <script type="text/javascript" src="common/directives/mfb/mfb-directive.js"></script><!-- Source https://github.com/nobitagit/ng-material-floating-button -->
+    <script type="text/javascript" src="common/directives/pagination/dirPagination.js"></script> <!-- Source https://github.com/michaelbromley/angularUtils/tree/master/src/directives/pagination -->
+    <script type="text/javascript" src="common/directives/peoplepicker/sp-peoplepicker.js"></script> <!-- Source https://github.com/jasonvenema/sharepoint-angular-peoplepicker -->
+    <script type="text/javascript" src="common/directives/angular-js-xlsx/xlsx.core.min.js"></script> <!-- Source https://github.com/SheetJS/js-xlsx -->
+    <script type="text/javascript" src="common/directives/angular-js-xlsx/angular-js-xlsx.js"></script> <!-- Source https://github.com/brexis/angular-js-xlsx -->
 
     <script type="text/javascript" src="common/services/utililities.js"></script>
     <!-- Models -->
@@ -91,10 +94,8 @@
     <div class="container-fluid" data-ng-app="app">
         <!--       <h1>Trainings Log Application</h1>-->
         <div id="notification-area">
-            <div ng-http-loader methods="GET" title="Loading. Please wait" template="common/directives/ngHttpLoader/loader.tpl.html" ttl="1"></div>
-            <div ng-http-loader methods="POST" title="Saving. Please wait" template="common/directives/ngHttpLoader/loader.tpl.html" ttl="5"></div>
         </div>
-        <%--<div ng-include src="'app/traininglogs/people/people-list.tpl.html'"></div>--%>
+        <%--<div ng-include src="'app/traininglogs/people/people-importer.tpl.html'"></div>--%>
         <div data-ng-view=""></div>
         <div ng-include src="'app/mfb-buttons.tpl.html'"></div>
     </div>

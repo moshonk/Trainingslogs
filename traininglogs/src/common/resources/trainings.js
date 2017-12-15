@@ -61,7 +61,7 @@ angular.module('resources.trainings', ['services.utilities', 'resources.departme
         if (!training.id) {
 
             TermStoreService.addTerm(training.title, TRAININGS_TERMSET_GUID).then(function (response) {
-                
+
                 training.id = response.Id;
 
                 trainingsList.push(training);

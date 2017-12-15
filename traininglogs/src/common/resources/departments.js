@@ -56,7 +56,7 @@ angular.module('resources.departments', ['services.utilities'])
 
     Departments.addDepartment = function (department) {
 
-        var defer = $q.defer();
+        var deferred = $q.defer();
 
         if (!department.id) {
 
@@ -66,17 +66,17 @@ angular.module('resources.departments', ['services.utilities'])
 
                 departmentsList.push(department);
 
-                defer.resolve(department)
+                deferred.resolve(department)
 
             }).catch(function (error) {
 
-                defer.reject(error);
+                deferred.reject(error);
 
             });
 
         }
 
-        return defer.promise;
+        return deferred.promise;
 
     };
 
@@ -95,6 +95,54 @@ angular.module('resources.departments', ['services.utilities'])
             deferred.reject(error)
 
         });
+
+        return deferred.promise;
+
+    };
+
+    Departments.findByTitle = function (title) {
+
+        var deferred = $q.defer();
+
+        title = title.replace('/', '-');
+
+        title = title.replace('&', 'and');
+
+        title = title.replace(/  +/g, ' '); //Replace double spaces with single space
+
+        title = _.trim(_.startCase(_.toLower(title))); //Remove whitespace as well as capitalize first letter of each word
+
+        var department = _.find(departmentsList, function (dept) {
+
+            return dept.title.toLowerCase() == title.toLowerCase();
+
+        });
+
+        if (angular.isUndefined(department)) {
+
+            TermStoreService.addTerm(title, DEPARTMENTS_TERMSET_GUID).then(function (response) {
+
+                department = {};
+
+                department.id = response.Id;
+
+                department.title = response.title;
+
+                departmentsList.push(department);
+
+                deferred.resolve(department)
+
+            }).catch(function (error) {
+
+                deferred.reject(error);
+
+            });
+
+        } else {
+
+            deferred.resolve(department);
+
+        }
 
         return deferred.promise;
 

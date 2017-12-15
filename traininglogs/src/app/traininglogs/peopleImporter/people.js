@@ -10,7 +10,6 @@
         promises.push(Positions.fetchAll());
         promises.push(Departments.fetchAll());
         promises.push(People.fetchAll());
-        promises.push(People.getListPermissions());
 
         $q.all(promises).then(function (promiseResponses) {
 
@@ -18,7 +17,6 @@
             $scope.positions = promiseResponses[1];
             $scope.departments = promiseResponses[2];
             $scope.people = promiseResponses[3];
-            $scope.permissions = promiseResponses[4];
 
         });
 
@@ -74,7 +72,7 @@
 
                     $scope.people = data;
 
-                    UtilService.showSuccessMessage('#notification-area', 'Person deleted successfully!!');
+                    UtilService.showSuccessMessage('#notification-area', 'Training deleted successfully!!');
 
                 }).catch(function (error) {
 
@@ -117,25 +115,22 @@
         }
 
     };
-
-    $scope.init();
-
-}])
-
-.controller('peopleImporterCtrl', ['$scope', '$q', '$log', '$timeout', '$location', '$dialog', '$dialogAlert', 'People', 'Departments', 'Positions',
-    function ($scope, $q, $log, $timeout, $location, $dialog, $dialogAlert, People, Departments, Positions) {
-
+    $scope.win = "Yess"
     $scope.readImportFile = function (workbook) {
 
+        alert('Reading file');
+        
         var firstSheetName = workbook.SheetNames[0];
 
-        var dataObjects = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], { header: ['payrollNo', 'name', 'gender', 'position', 'department', 'location'], range: 1 });
-
+        var dataObjects = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], {header: ['payrollNo','name','gender','position','department','location'], range: 1});
+        
         if (dataObjects.length > 0) {
 
             $scope.data = dataObjects;
-
-            $dialogAlert('Reading Complete', 'Ready!!');
+            $scope.win = "Yes"
+            $log.debug(dataObjects);
+            alert('finiished')
+            //$scope.import();
 
         } else {
 
@@ -164,7 +159,7 @@
             $location.path("/listPeople/");
 
             $scope.processing = false;
-
+       
         }).catch(function (error) {
 
             $dialogAlert('Oops!, we had some trouble while importing <br /> ' + error, 'Import Error');
@@ -175,62 +170,35 @@
 
     }
 
-        
-        $scope.test = function () {
-    
-            People.fetchAll().then(function (departments) {
-                var promises = [];
-                console.log(departments)
-                angular.forEach(departments, function (department, k) {
-    
-                    promises.push(People.remove(department));
-    
-                });
-    
-                $q.all(promises).then(function () {
-    
-                    console.log('deleted!');
-    
-                });
-    
-            });
+    $scope.test = function () {
 
-            Departments.fetchAll().then(function (departments) {
-                var promises = [];
-                console.log(departments)
-                angular.forEach(departments, function (department, k) {
+        People.fetchAll().then(function (departments) {
+            var promises = [];
+            console.log(departments)
+            angular.forEach(departments, function (department, k) {
 
-                    promises.push(Departments.remove(department));
-
-                });
-
-                $q.all(promises).then(function () {
-
-                    console.log('deleted!');
-
-                });
+                promises.push(People.remove(department));
 
             });
 
-            Positions.fetchAll().then(function (departments) {
-                var promises = [];
+            $q.all(promises).then(function () {
 
-                angular.forEach(departments, function (department, k) {
-
-                    promises.push(Positions.remove(department));
-
-                });
-
-                $q.all(promises).then(function () {
-
-                    console.log('deleted!');
-
-                });
+                console.log('deleted!');
 
             });
 
-    
-        };
-        
+        });
+
+        //Departments.findByTitle('STORES & PROCUREMENT').then(function (dept) {
+        //    alert('fg')
+        //    console.log(dept)
+
+        //}).catch(function (error) {
+
+        //    alert(error)
+        //});
+    };
+
+    $scope.init();
 
 }]);

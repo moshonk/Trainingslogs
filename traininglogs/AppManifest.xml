@@ -3,11 +3,11 @@
 <App xmlns="http://schemas.microsoft.com/sharepoint/2012/app/manifest"
      Name="trainingslogsapp"
      ProductID="{798462f8-e3b8-42dc-b6a2-344921d34e9e}"
-     Version="1.0.0.10"
+     Version="1.0.0.16"
      SharePointMinVersion="15.0.0.0"
 >
   <Properties>
-    <Title>Training Attendance Logs App</Title>
+    <Title>Training Attendance Logging App</Title>
     <StartPage>~appWebUrl/src/Default.aspx?{StandardTokens}</StartPage>
   </Properties>
 

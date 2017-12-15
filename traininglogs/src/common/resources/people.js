@@ -103,38 +103,46 @@ angular.module('resources.people', ['resources.departments', 'resources.position
             }
         }
 
-        if (!person.id) {
+        if (People.findByPayrollNo(person.payrollNo)) {
 
-            ShptRestService.createNewListItem(PEOPLE_LIST_NAME, data).then(function (response) {
-
-                person.id = response.Id;
-
-                peopleList.push(person);
-
-                defer.resolve(person)
-
-            }).catch(function (error) {
-
-                defer.reject(error);
-
-            });
+            defer.reject('The payrollNo ' + person.payrollNo + ' already exists');
 
         } else {
 
-            ShptRestService.updateListItem(PEOPLE_LIST_NAME, person.id, data).then(function (response) {
+            if (!person.id) {
 
-                person.id = response.Id;
+                ShptRestService.createNewListItem(PEOPLE_LIST_NAME, data).then(function (response) {
 
-                //Update PeopleList
-                peopleList = ArrayUtils.updateItemInArray(peopleList, person, { id: person.id });
+                    person.id = response.Id;
 
-                defer.resolve(person)
+                    peopleList.push(person);
 
-            }).catch(function (error) {
+                    defer.resolve(person)
 
-                defer.reject(error);
+                }).catch(function (error) {
 
-            });
+                    defer.reject(error);
+
+                });
+
+            } else {
+
+                ShptRestService.updateListItem(PEOPLE_LIST_NAME, person.id, data).then(function (response) {
+
+                    person.id = response.Id;
+
+                    //Update PeopleList
+                    peopleList = ArrayUtils.updateItemInArray(peopleList, person, { id: person.id });
+
+                    defer.resolve(person)
+
+                }).catch(function (error) {
+
+                    defer.reject(error);
+
+                });
+
+            }
 
         }
 
@@ -143,17 +151,13 @@ angular.module('resources.people', ['resources.departments', 'resources.position
     };
 
     /*
-    *Check if person exists in the people list
+    *Check if person exists in the people list using payrollNo
     *@param {object} person
     *@returns {bool} true if person found, false if not found
     */
-    People.personExists = function (person) {
+    People.payrollNoExists = function (person) {
 
-        return _.some(peopleList, function (thatPerson) {
-
-            thatPerson.id === person.id;
-
-        });
+        return _.some(peopleList, { payrollNo: person.payrollNo });
 
     };
 
@@ -174,6 +178,104 @@ angular.module('resources.people', ['resources.departments', 'resources.position
         });
 
         return deferred.promise;
+
+    };
+
+    People.findByPayrollNo = function (payrollNo) {
+
+        var index = _.findIndex(peopleList, function (p) {
+
+            return parseInt(p.payrollNo) === parseInt(payrollNo);
+
+        });
+
+        if (index > -1) {
+
+            return peopleList[index];
+
+        } else {
+
+            return false;
+
+        }
+
+
+    };
+
+    People.import = function (dataObjects) {
+
+        var deferred = $q.defer();
+
+        var personPromises = [];
+
+        angular.forEach(dataObjects, function (k, index) {
+            var person, department, location, position;
+
+            var promises = [];
+
+            promises.push(Departments.findByTitle(k.department));
+            promises.push(Locations.findByTitle(k.location));
+            promises.push(Positions.findByTitle(k.position));
+
+            $q.all(promises).then(function (promiseResponses) {
+
+                department = promiseResponses[0];
+                location = promiseResponses[1];
+                position = promiseResponses[2];
+
+                if (!People.findByPayrollNo(k.payrollNo)) {
+
+                    var person = {};
+                    person.payrollNo = k.payrollNo;
+                    person.name = k.name;
+                    person.gender = k.gender == 'F' ? 'Female' : 'Male'
+                    person.department = department;
+                    person.location = location;
+                    person.position = position;
+
+                    personPromises.push(People.addPerson(person));
+
+                }
+
+            }, function (error) {
+
+                deferred.reject(error);
+
+            });
+
+        });
+
+        $q.all(personPromises).then(function (promiseResponses) {
+
+            if (promiseResponses.length > 0) {
+
+                angular.forEach(personPromises, function (person, k) {
+
+                    peopleList.add(person);
+
+                });
+
+            }
+
+            deferred.resolve(peopleList);
+
+        }, function (error) {
+
+            deferred.reject(error);
+
+        });
+
+        return deferred.promise;
+
+    };
+
+    /*
+    * Get list permissions for current user
+    * @returns {promise<object>}  Returns a permissions object 
+    */
+    People.getListPermissions = function () {
+
+        return ShptRestService.getListUserEffectivePermissions(PEOPLE_LIST_NAME);
 
     };
 

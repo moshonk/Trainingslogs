@@ -95,6 +95,54 @@
 
     };
 
+    Positions.findByTitle = function (title) {
+
+        var deferred = $q.defer();
+
+        title = title.replace('/', '-');
+
+        title = title.replace('&', 'and');
+
+        title = title.replace(/  +/g, ' '); //Replace double spaces with single space
+
+        title = _.trim(_.startCase(_.toLower(title))); //Remove whitespace as well as capitalize first letter of each word
+
+        var position = _.find(positionsList, function (pos) {
+
+            return pos.title.toLowerCase() == title.toLowerCase();
+
+        });
+
+        if (angular.isUndefined(position)) {
+
+            TermStoreService.addTerm(title, POSITIONS_TERMSET_GUID).then(function (response) {
+
+                position = {};
+
+                position.id = response.Id;
+
+                position.title = response.title;
+
+                positionsList.push(position);
+
+                deferred.resolve(position)
+
+            }).catch(function (error) {
+
+                deferred.reject(error);
+
+            });
+
+        } else {
+
+            deferred.resolve(position);
+
+        }
+
+        return deferred.promise;
+
+    };
+
     return Positions;
 
 }]);

@@ -41,9 +41,11 @@ angular.module('resources.traininglogs', ['resources.trainings', 'resources.atte
                             traininglog.target = v.Target;
                             if (traininglog.target == "selected") {
                                 traininglog.targetDepartment = [];
-                                angular.forEach(v.TargetDepartment.results, function (department, k) {
-                                    traininglog.targetDepartment.push({ title: department.Label, id: department.TermGuid });
-                                });
+                                if (v.TargetDepartment1) {
+                                    angular.forEach(v.TargetDepartment1.results, function (department, k) {
+                                        traininglog.targetDepartment.push({ title: department.Label, id: department.TermGuid });
+                                    });
+                                }
                             }
                             traininglog.training = { title: v.TrainingTitle.Label, id: v.TrainingTitle.TermGuid };
                             traininglog.attendances = _.filter(attendances, { traininglogId: v.ID });
@@ -164,7 +166,7 @@ angular.module('resources.traininglogs', ['resources.trainings', 'resources.atte
 
                     }
 
-                    ShptRestService.getMultiValueTaxonomyHiddenNoteFieldName(TRAINING_LOGS_LIST_NAME, 'TargetDepartment').then(function (hiddenNoteFieldName) {
+                    ShptRestService.getMultiValueTaxonomyHiddenNoteFieldName(TRAINING_LOGS_LIST_NAME, 'TargetDepartment1').then(function (hiddenNoteFieldName) {
 
                         data[hiddenNoteFieldName] = targetDepartments;
 
@@ -178,7 +180,6 @@ angular.module('resources.traininglogs', ['resources.trainings', 'resources.atte
 
                         });
 
-
                     }).catch(function (error) {
 
                         deferred.reject(error);
@@ -186,6 +187,8 @@ angular.module('resources.traininglogs', ['resources.trainings', 'resources.atte
                     });
 
                 } else {
+
+                    traininglog.targetDepartment = [];
 
                     TrainingLogs.saveLogToDatabase(traininglog, data).then(function (response) {
 
@@ -323,6 +326,16 @@ angular.module('resources.traininglogs', ['resources.trainings', 'resources.atte
             });
 
             return found;
+
+        };
+
+        /*
+        * Get list permissions for current user
+        * @returns {promise<object>}  Returns a permissions object wrapped inside a promise
+        */
+        TrainingLogs.getListPermissions = function () {
+
+            return ShptRestService.getListUserEffectivePermissions(TRAINING_LOGS_LIST_NAME);
 
         };
 

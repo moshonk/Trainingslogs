@@ -51,6 +51,9 @@
     <Content Include="src\app\traininglogs\locations\location-add.tpl.html" />
     <Content Include="src\app\traininglogs\locations\location-list.tpl.html" />
     <Content Include="src\app\traininglogs\locations\locations.js" />
+    <Content Include="src\app\traininglogs\peopleImporter\people-importer.tpl.html" />
+    <Content Include="src\app\traininglogs\peopleImporter\people.js" />
+    <Content Include="src\app\traininglogs\people\people-importer.tpl.html" />
     <Content Include="src\app\traininglogs\people\people.js" />
     <Content Include="src\app\traininglogs\positions\position-add.tpl.html" />
     <Content Include="src\app\traininglogs\positions\position-list.tpl.html" />
@@ -71,6 +74,8 @@
     <Content Include="src\common\directives\am.multiselect\multiselect.css" />
     <Content Include="src\common\directives\am.multiselect\multiselect.tmpl.html" />
     <Content Include="src\common\directives\am.multiselect\singleselect.tmpl.html" />
+    <Content Include="src\common\directives\angular-js-xlsx\angular-js-xlsx.js" />
+    <Content Include="src\common\directives\angular-js-xlsx\xlsx.core.min.js" />
     <Content Include="src\common\directives\mfb\mfb-directive.js" />
     <Content Include="src\common\directives\mfb\mfb.min.css" />
     <Content Include="src\common\directives\modal.js" />

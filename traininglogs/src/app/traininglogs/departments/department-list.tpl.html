@@ -2,6 +2,12 @@
     <div class="col-md-12">
         <h2><i class="fa fa-list-alt"></i> Departments</h2>
     </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label class="control-label"><i class="fa fa-search"></i> Search</label>
+            <input type="text" name="search" ng-model="q" value="" placeholder="Enter search text" />
+        </div>
+    </div>
 </div>
 <div class="row">
     <div class="col-md-12">
@@ -27,7 +33,7 @@
                     <th>Title</th>
                     <th></th>
                 </tr>
-                <tr dir-paginate="department in departments | itemsPerPage: 10">
+                <tr dir-paginate="department in filterdItems = (departments | filter: q) | itemsPerPage: 10">
                     <td>{{department.title}}</td>
                     <td>
                         <div class="btn-group" uib-dropdown>
@@ -48,5 +54,4 @@
     <div class="col-sm-12">
         <dir-pagination-controls boundary-links="true" template-url="common/directives/pagination/dirPagination.tpl.html"></dir-pagination-controls>
     </div>
-
 </div>

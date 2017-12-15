@@ -95,6 +95,54 @@
 
     };
 
+    Locations.findByTitle = function (title) {
+
+        var deferred = $q.defer();
+
+        title = title.replace('/', '-');
+
+        title = title.replace('&', 'and');
+
+        title = title.replace(/  +/g, ' '); //Replace double spaces with single space
+
+        title = _.trim(_.startCase(_.toLower(title))); //Remove whitespace as well as capitalize first letter of each word
+
+        var location = _.find(locationsList, function (loc) {
+
+            return loc.title.toLowerCase() == title.toLowerCase();
+
+        });
+
+        if (angular.isUndefined(location)) {
+
+            TermStoreService.addTerm(title, LOCATIONS_TERMSET_GUID).then(function (response) {
+
+                location = {};
+
+                location.id = response.Id;
+
+                location.title = response.title;
+
+                locationsList.push(location);
+
+                deferred.resolve(location)
+
+            }).catch(function (error) {
+
+                deferred.reject(error);
+
+            });
+
+        } else {
+
+            deferred.resolve(location);
+
+        }
+
+        return deferred.promise;
+
+    };
+
     return Locations;
 
 }]);

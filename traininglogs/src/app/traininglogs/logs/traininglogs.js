@@ -22,16 +22,19 @@
             promises.push(Departments.fetchAll());
             promises.push(People.fetchAll());
             promises.push(Trainings.fetchAll());
-            
+            promises.push(TrainingLogs.getListPermissions());
+
             $q.all(promises).then(function (promiseResults) {
-                
+
                 $scope.traininglogs = promiseResults[0];
 
                 $scope.departments = promiseResults[1];
-                
+
                 $scope.people = promiseResults[2];
 
                 $scope.trainings = promiseResults[3];
+
+                $scope.permissions = promiseResults[4];
 
                 $scope.setActiveTraininglog();
 
@@ -84,6 +87,7 @@
 
             var logDataWrapper = { scopeVariableName: 'traininglog', dataObject: traininglog };
 
+            //$dialog('app/traininglogs/logs/traininglog-add.tpl.html', 'lg', logDataWrapper).then(function (traininglog) {
             $dialog('app/traininglogs/logs/traininglog-add.tpl.html', 'lg', logDataWrapper).then(function (traininglog) {
 
                 $location.path("/listTraininglogs/");
@@ -203,7 +207,7 @@
         };
 
         $scope.selectedDepartments = function () {
-            
+
             return _.map($scope.traininglog.targetDepartment, 'title').join(', ')
 
         };

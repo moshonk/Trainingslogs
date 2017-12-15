@@ -6,7 +6,8 @@ var app = angular.module('app', [
     'ui.bootstrap.dialogs',
     'angucomplete-alt',
     'directives.dirPagination',
-    'directives.ng.httpLoader',
+    'angular-loading-bar',
+    'directives.angular-js-xlsx',
     'ui.grid',
     'ui.grid.exporter',
     'people',
@@ -36,6 +37,11 @@ app.config(['$routeProvider', function ($routeprovider) {
         templateUrl: 'app/traininglogs/people/people-list.tpl.html',
         controller: 'peopleCtrl'
     }).
+
+    when('/importPeople', {
+        templateUrl: 'app/traininglogs/people/people-importer.tpl.html',
+        controller: 'peopleImporterCtrl'
+    }).    
     /*End Staffmembers*/
 
     /*Begin Departments*/
@@ -108,12 +114,17 @@ app.config(['$routeProvider', function ($routeprovider) {
 
     /*Begin Training logs*/
     when('/editTraininglog/:id', {
-        templateUrl: 'app/traininglogs/logs/traininglog-edit.tpl.html',
+        templateUrl: 'app/traininglogs/logs/traininglog-list.tpl.html',
         controller: 'traininglogsCtrl'
     }).
 
     when('/addTraininglog', {
         templateUrl: 'app/traininglogs/logs/traininglog-add.tpl.html',
+        controller: 'traininglogsCtrl'
+    }).
+
+    when('/showTraininglog/:id', {
+        templateUrl: 'app/traininglogs/logs/traininglog-edit.tpl.html',
         controller: 'traininglogsCtrl'
     }).
 
@@ -138,10 +149,3 @@ app.config(['$routeProvider', function ($routeprovider) {
     });
 
 }]);
-
-app.config([
-  'httpMethodInterceptorProvider',
-  function (httpMethodInterceptorProvider) {
-      httpMethodInterceptorProvider.whitelistLocalRequests();
-  }
-]);

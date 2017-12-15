@@ -2,6 +2,12 @@
     <div class="col-md-12">
         <h2><i class="fa fa-file-text"></i> Training Titles</h2>
     </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label class="control-label"><i class="fa fa-search"></i> Search</label>
+            <input type="text" name="search" ng-model="q" value="" placeholder="Enter search text" />
+        </div>
+    </div>
 </div>
 <div class="row">
     <div class="col-md-12">
@@ -28,7 +34,7 @@
                     <th>Title</th>
                     <th></th>
                 </tr>
-                <tr dir-paginate="training in trainings | itemsPerPage: 10">
+                <tr dir-paginate="training in filteredItedms = (trainings | filter: q) | itemsPerPage: 10">
                     <td>{{training.title}}</td>
                     <td>
                         <div class="btn-group" uib-dropdown>

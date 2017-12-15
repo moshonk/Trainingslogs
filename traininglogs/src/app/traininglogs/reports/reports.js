@@ -85,12 +85,6 @@
 
     };
 
-    $scope.setUniqueTrainings = function () {
-
-        //$scope.trainings = TrainingReports.uniqueTrainings($scope.year);
-
-    };
-
     $scope.attendanceMatrixGridOptions = {
         enableSorting: false,
         enableFiltering: false,
